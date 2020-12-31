@@ -93,7 +93,7 @@ int main()
 	while (true) {
 		int i = rand() % 30;
 		int j = rand() % 30;
-		if (matrix[i][j]) {
+		if (!matrix[i][j]) {
 			camera.Position = glm::vec3(i + rand() % 100 /100, 0, j + rand() % 100 / 100);
 			lightPos = camera.Position;
 			lightPos.y = 1;
@@ -105,15 +105,13 @@ int main()
 	// build and compile our shader zprogram
 	// ------------------------------------
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
+	Shader lampShader2("shaders/2.1.lamp2.vs", "shaders/2.1.lamp2.fs");
 	Shader cube("shaders/cube.vs", "shaders/cube.fs");
 	Model wall("objects/wall.obj");
 	
 	
 	int amount = 0;
 	load(wall,&amount,0.5f);
-
-	
-
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -168,16 +166,24 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	// second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
+	// lightsource 1
 	unsigned int lightVAO;
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// lightsource 2
+	unsigned int lightVAO2;
+	glGenVertexArrays(1, &lightVAO2);
+	glBindVertexArray(lightVAO2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	// note that we update the lamp's position attribute's stride to reflect the updated buffer data
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
 
 	// render loop
 	// -----------
@@ -193,9 +199,6 @@ int main()
 		// -----
 		processInput(window);
 
-		//detects walls
-
-
 		// render
 		// ------
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -208,22 +211,36 @@ int main()
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 
-		// also draw the lamp object
-		lampShader.use();
-		lampShader.setMat4("projection", projection);
-		lampShader.setMat4("view", view);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-		lampShader.setMat4("model", model);
-
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		{// also draw the lamp object
+			lampShader.use();
+			lampShader.setMat4("projection", projection);
+			lampShader.setMat4("view", view);
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+			lampShader.setMat4("model", model);
+			glBindVertexArray(lightVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
+		{
+			lampShader2.use();
+			lampShader2.setMat4("projection", projection);
+			lampShader2.setMat4("view", view);
+			model = glm::mat4(1.0f);
+			glm::vec3 thisview = camera.Position;
+			thisview.y += 1;
+			thisview.x = camera.Position.x - 1;
+			model = glm::translate(model, glm::vec3(thisview));
+			model = glm::scale(model, glm::vec3(0.5f)); // a smaller cube
+			lampShader2.setMat4("model", model);
+			glBindVertexArray(lightVAO2);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		cube.use();
 		cube.setMat4("projection", projection);
 		cube.setMat4("view", view);
-
 		cube.use();
 		cube.setInt("texture_diffuse1", 0);
 
@@ -238,6 +255,7 @@ int main()
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
 	glDeleteVertexArrays(1, &lightVAO);
+	glDeleteVertexArrays(1, &lightVAO2);
 	glDeleteBuffers(1, &VBO);
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
@@ -301,7 +319,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
 }
-
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
