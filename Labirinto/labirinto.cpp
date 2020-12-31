@@ -17,6 +17,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void load(Model obj, int *amount,float scale);
+void load_textures(Model obj, int amount);
+
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -32,18 +35,16 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+//Pos Matrix
+
+int matrix[30][30];
+float matrixF[30 * 5][30 * 5];
+
 // lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos;
 
 int main()
 {
-
-	int matrix[30][30];
-	CriaLab(matrix);
-	for (unsigned int i = 0; i < 30; i++)
-		for (unsigned int j = 0; j < 30; j++)
-			if (matrix[i][j]) { camera.Position = glm::vec3(i, 0, j); break; }
-
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
@@ -84,35 +85,34 @@ int main()
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 
-	// build and compile our shader zprogram
-	// ------------------------------------
-	Shader lightingShader("shaders/2.1.basic_lighting.vs", "shaders/2.1.basic_lighting.fs");
-	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
-	Shader cube("shaders/cube.vs", "shaders/cube.fs");
-	Model rock("objects/rock.obj");
 
-	unsigned int amount = 30*30;
-	glm::mat4 *modelMatrices;
-	modelMatrices = new glm::mat4[amount];
-	srand(glfwGetTime()); // initialize random seed	
-	//float radius = 15.0;
-	float offset = 2.5f;
-	int a = 0;
-	for (unsigned int i = 0; i < 30; i++)
-	{
-		for (unsigned int j = 0; j < 30; j++) {
-			
-			glm::mat4 model = glm::mat4(1.0f);
-			if(!matrix[i][j])
-				model = glm::translate(model, glm::vec3(i, 100,j));
-			else
-				model = glm::translate(model, glm::vec3(i, 0, j));
-			model = glm::scale(model, glm::vec3(0.4f));
-			// 4. now add to list of matrices
-			modelMatrices[a] = model;
-			a++;
+	//-------------------------BEGIN------------//
+
+
+	CriaLab(matrix);
+	while (true) {
+		int i = rand() % 30;
+		int j = rand() % 30;
+		if (matrix[i][j]) {
+			camera.Position = glm::vec3(i + rand() % 100 /100, 0, j + rand() % 100 / 100);
+			lightPos = camera.Position;
+			lightPos.y = 1;
+			break; 
 		}
 	}
+
+
+	// build and compile our shader zprogram
+	// ------------------------------------
+	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
+	Shader cube("shaders/cube.vs", "shaders/cube.fs");
+	Model wall("objects/wall.obj");
+	
+	
+	int amount = 0;
+	load(wall,&amount,0.5f);
+
+	
 
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
@@ -161,55 +161,12 @@ int main()
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
 	// first, configure the cube's VAO (and VBO)
-	unsigned int VBO, cubeVAO;
-	glGenVertexArrays(1, &cubeVAO);
+	unsigned int VBO;
+
 	glGenBuffers(1, &VBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindVertexArray(cubeVAO);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	// configure instanced array
-  // -------------------------
-	unsigned int buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
-
-	// set transformation matrices as an instance vertex attribute (with divisor 1)
-	// note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
-	// normally you'd want to do this in a more organized fashion, but for learning purposes this will do.
-	// -----------------------------------------------------------------------------------------------------------------------------------
-	for (unsigned int i = 0; i < rock.meshes.size(); i++)
-	{
-		unsigned int VAO = rock.meshes[i].VAO;
-		glBindVertexArray(VAO);
-		// set attribute pointers for matrix (4 times vec4)
-		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-		glEnableVertexAttribArray(5);
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
-
-		glVertexAttribDivisor(3, 1);
-		glVertexAttribDivisor(4, 1);
-		glVertexAttribDivisor(5, 1);
-		glVertexAttribDivisor(6, 1);
-
-		glBindVertexArray(0);
-	}
-
 
 	// second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
 	unsigned int lightVAO;
@@ -236,31 +193,20 @@ int main()
 		// -----
 		processInput(window);
 
+		//detects walls
+
+
 		// render
 		// ------
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// be sure to activate shader when setting uniforms/drawing objects
-		lightingShader.use();
-		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("lightColor", 0.0f, 1.0f, 1.0f);
-		lightingShader.setVec3("lightPos", lightPos);
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		lightingShader.setMat4("projection", projection);
-		lightingShader.setMat4("view", view);
-
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
-		lightingShader.setMat4("model", model);
-
-		// render the cube
-		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
 
 		// also draw the lamp object
 		lampShader.use();
@@ -274,24 +220,14 @@ int main()
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-
-
 		cube.use();
 		cube.setMat4("projection", projection);
 		cube.setMat4("view", view);
 
-
 		cube.use();
 		cube.setInt("texture_diffuse1", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, rock.textures_loaded[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
-		for (unsigned int i = 0; i < rock.meshes.size(); i++)
-		{
-			glBindVertexArray(rock.meshes[i].VAO);
-			glDrawElementsInstanced(GL_TRIANGLES, rock.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
-			glBindVertexArray(0);
-		}
 
+		load_textures(wall,amount);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -301,7 +237,6 @@ int main()
 
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
@@ -311,24 +246,51 @@ int main()
 	return 0;
 }
 
+void load_textures(Model obj,int amount) {
+	for (unsigned int i = 0; i < obj.meshes.size(); i++)
+	{
+		glBindVertexArray(obj.meshes[i].VAO);
+		glDrawElementsInstanced(
+			GL_TRIANGLES, obj.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount
+		);
+	}
+}
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-		 camera.Position.y = 55;
-	else camera.Position.y = 0;
+		camera.Position.y = 55;
+	else 
+	{
+		camera.Position.y = 0;
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+			camera.ProcessKeyboard(FORWARD, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+			camera.ProcessKeyboard(BACKWARD, deltaTime);
+			lightPos.x =  camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+			camera.ProcessKeyboard(LEFT, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			camera.ProcessKeyboard(RIGHT, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -366,5 +328,73 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
+}
+
+void load(Model obj, int * getAmount, float scale)
+{
+	int len = sized;
+	
+	unsigned int amount = 0;
+	glm::mat4 *modelMatrices;
+	//calcula a quantitades de nao p
+	for (int i = 0; i < len; i++)
+		for (int j = 0; j < len; j++)
+			if (matrix[i][j]) amount++;
+
+	*getAmount = amount;
+	modelMatrices = new glm::mat4[amount];
+	srand(glfwGetTime()); // initialize random seed	
+
+
+	int a = 0;
+	for (unsigned int i = 0; i < len; i++)
+		for (unsigned int j = 0; j < len; j++) 
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			// only calculates what is needed skips positioning useless blocks
+			if (!matrix[i][j])
+				continue;
+			//model = glm::translate(model, glm::vec3(i, 100,j));
+			else
+				model = glm::translate(model, glm::vec3(i, 0, j));
+			model = glm::scale(model, glm::vec3(scale));
+			// 4. now add to list of matrices
+			modelMatrices[a] = model;
+			a++;
+		}
+	// configure instanced array
+	// -------------------------
+	unsigned int buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+
+	// set transformation matrices as an instance vertex attribute (with divisor 1)
+	// note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
+	// normally you'd want to do this in a more organized fashion, but for learning purposes this will do.
+	// -----------------------------------------------------------------------------------------------------------------------------------
+	for (unsigned int i = 0; i < obj.meshes.size(); i++)
+	{
+		unsigned int VAO = obj.meshes[i].VAO;
+		glBindVertexArray(VAO);
+		// set attribute pointers for matrix (4 times vec4)
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+
+		glBindVertexArray(0);
+	}
+
 }
 

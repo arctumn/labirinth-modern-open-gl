@@ -151,8 +151,8 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 				CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
 				contb = rand() % 4 + 2;
 			}
-			else
-				std::cout << "Não consigo criar branch.";
+			//else
+				//std::cout << "Não consigo criar branch.";
 		}
 
 		// Escolher Branch
