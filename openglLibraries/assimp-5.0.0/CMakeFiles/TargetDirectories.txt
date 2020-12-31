@@ -1,0 +1,17 @@
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/CMakeFiles/uninstall.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/CMakeFiles/UpdateAssimpLibsDebugSymbolsAndDLLs.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/CMakeFiles/INSTALL.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/CMakeFiles/ALL_BUILD.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/CMakeFiles/ZERO_CHECK.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/zlib/CMakeFiles/zlib.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/zlib/CMakeFiles/zlibstatic.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/zlib/CMakeFiles/INSTALL.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/zlib/CMakeFiles/ALL_BUILD.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/CMakeFiles/INSTALL.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/irrXML/CMakeFiles/IrrXML.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/contrib/irrXML/CMakeFiles/INSTALL.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/code/CMakeFiles/assimp.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/code/CMakeFiles/INSTALL.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/test/CMakeFiles/unit.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/test/CMakeFiles/INSTALL.dir
+C:/Users/silve/Desktop/openglLibraries/assimp-5.0.0/test/headercheck/CMakeFiles/INSTALL.dir
