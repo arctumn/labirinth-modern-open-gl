@@ -461,9 +461,7 @@ void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 
 void produceExit(GLFWwindow *window,glm::mat4 *matrices, Model obj, int getAmount) {
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-		glm::mat4 model = matrices[1];
-		model = glm::translate(model, glm::vec3(888, 0, 888));
-		matrices[1] = model;
+		matrices[1] = (glm::mat4)0;
 		writeToPos(matrices, obj, getAmount);
 	}
 }
