@@ -17,10 +17,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-void load(Model obj, int *amount,float scale);
+glm::mat4 * load(Model obj, int *amount,float scale, glm::mat4 * matrices);
 void load_textures(Model obj, int amount);
-bool detectColision(float obj1x, float obj2x, float obj1z, float obj2z, float sumRad);
-void rollback(bool *firstTime, float colDistance, float *lastestX, float *lastestZ);
+void writeToPos(glm::mat4 *matrices, Model obj, int getAmount);
+void produceExit(GLFWwindow *window,glm::mat4 *matrices, Model obj, int getAmount);
+
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -106,13 +108,15 @@ int main()
 	// build and compile our shader program
 	// ------------------------------------
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
-	Shader lampShader2("shaders/2.1.lamp2.vs", "shaders/2.1.lamp2.fs");
 	Shader cube("shaders/cube.vs", "shaders/cube.fs");
 	Model wall("objects/wall.obj");
 	
 	
 	int amount = 0;
-	load(wall,&amount,0.5f);
+	glm::mat4 *modelMatrices = NULL;
+	modelMatrices = load(wall, &amount, 0.5f, modelMatrices);
+
+	//oad(wall,&amount,0.5f,modelMatrices);
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -161,32 +165,34 @@ int main()
 	};
 	// first, configure the cube's VAO (and VBO)
 	unsigned int VBO;
-
-	glGenBuffers(1, &VBO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// lightsource 1
 	unsigned int lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// lightsource 2
 	unsigned int lightVAO2;
-	glGenVertexArrays(1, &lightVAO2);
-	glBindVertexArray(lightVAO2);
+	{
+		glGenBuffers(1, &VBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// note that we update the lamp's position attribute's stride to reflect the updated buffer data
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+		// lightsource 1
+
+		glGenVertexArrays(1, &lightVAO);
+		glBindVertexArray(lightVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		// lightsource 2
+
+		glGenVertexArrays(1, &lightVAO2);
+		glBindVertexArray(lightVAO2);
+
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		// note that we update the lamp's position attribute's stride to reflect the updated buffer data
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+	}
 	bool firstTime = true;
 	float lastXthis = 0;
 	float lastZtihs = 0;
@@ -195,13 +201,12 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// per-frame time logic
-		// --------------------
+	
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
 		// input
-		// -----
 		processInput(window);
 
 		// render
@@ -230,16 +235,16 @@ int main()
 		}
 		//Draws the second land
 		{
-			lampShader2.use();
-			lampShader2.setMat4("projection", projection);
-			lampShader2.setMat4("view", view);
+			lampShader.use();
+			lampShader.setMat4("projection", projection);
+			lampShader.setMat4("view", view);
 			model = glm::mat4(1.0f);
 			glm::vec3 thisview = camera.Position;
 			thisview.y -= 10;
 			thisview.x = camera.Position.x - 1;
 			model = glm::translate(model, glm::vec3(thisview));
 			model = glm::scale(model, glm::vec3(0.2f)); 
-			lampShader2.setMat4("model", model);
+			lampShader.setMat4("model", model);
 			glBindVertexArray(lightVAO2);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
@@ -252,10 +257,10 @@ int main()
 		
 		// Handles the wall objects
 		
-
+		produceExit(window, modelMatrices, wall, amount);
 		load_textures(wall,amount);
 		//sistema de colisao
-		rollback(&firstTime, 0.85, &lastXthis, &lastZtihs);
+		//rollback(&firstTime, 1.5, &lastXthis, &lastZtihs);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -275,36 +280,6 @@ int main()
 	return 0;
 }
 
-bool detectColision(float obj1x, float obj2x, float obj1z, float obj2z,float sumRad) {
-	if (std::abs(obj1x - obj2x) < sumRad)
-		if (std::abs(obj1z - obj2z) < sumRad)
-			return true;
-	return false;
-}
-
-void rollback(bool *firstTime,float colDistance,float *lastestX, float *lastestZ) {
-	if (matrix[(int)lightPos.x][(int)lightPos.z]) {
-		if (detectColision(lightPos.x, (int)lightPos.x, lightPos.z, (int)lightPos.z, 0.92)) {
-			std::cout << "x: " << lightPos.x << " z: " << lightPos.z << " Colision" << std::endl;
-			if (*firstTime) {
-				camera.Position.x = startPosCamera.x;
-				camera.Position.z = startPosCamera.z;
-				*firstTime = false;
-			}
-			else {
-				camera.Position.x = *lastestX;
-				camera.Position.z = *lastestZ;
-			}
-			lightPos.x = camera.Position.x;
-			lightPos.z = camera.Position.z;
-
-		}
-		else {
-			*lastestX = camera.Position.x;
-			*lastestZ = camera.Position.z;
-		}
-	}
-}
 
 void load_textures(Model obj,int amount) {
 	for (unsigned int i = 0; i < obj.meshes.size(); i++)
@@ -391,22 +366,23 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(yoffset);
 }
 
-void load(Model obj, int * getAmount, float scale)
+glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 {
 	int len = sized;
 	
 	unsigned int amount = 0;
-	glm::mat4 *modelMatrices;
+	
 	//calcula a quantitades de nao p
 	for (int i = 0; i < len; i++)
 		for (int j = 0; j < len; j++)
 			if (matrix[i][j]) amount++;
 
 	*getAmount = amount;
-	modelMatrices = new glm::mat4[amount];
+	matrices = new glm::mat4[amount];
 	srand(glfwGetTime()); // initialize random seed	
 
-
+	glm::vec3 position(0, 0, 0);
+	bool firstH = true;
 	int a = 0;
 	for (unsigned int i = 0; i < len; i++)
 		for (unsigned int j = 0; j < len; j++) 
@@ -419,22 +395,46 @@ void load(Model obj, int * getAmount, float scale)
 			else
 				model = glm::translate(model, glm::vec3(i, 0, j));
 			model = glm::scale(model, glm::vec3(scale));
+			if (firstH) {
+				int tamanho = sqrtf(powf(0, 2.0) + powf(0, 2.0));
+				std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
+				position.x = i;
+				position.z = j;
+				firstH = false;
+			}
+			else {
+				int tamanho = sqrtf(powf(i-position.x, 2.0) + powf(j-position.z, 2.0));
+				std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
+				position.x = i;
+				position.z = j;
+			}
+			//}
+			
+			//glm::length(model);
 			// 4. now add to list of matrices
-			modelMatrices[a] = model;
+			matrices[a] = model;
 			a++;
 		}
+
+	writeToPos(matrices, obj, amount);
+
+	return matrices;
+
+}
+void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 	// configure instanced array
 	// -------------------------
 	unsigned int buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, getAmount * sizeof(glm::mat4), &matrices[0], GL_STATIC_DRAW);
 
 
 	// set transformation matrices as an instance vertex attribute (with divisor 1)
 	// note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
 	// normally you'd want to do this in a more organized fashion, but for learning purposes this will do.
 	// -----------------------------------------------------------------------------------------------------------------------------------
+
 	for (unsigned int i = 0; i < obj.meshes.size(); i++)
 	{
 		unsigned int VAO = obj.meshes[i].VAO;
@@ -459,3 +459,11 @@ void load(Model obj, int * getAmount, float scale)
 
 }
 
+void produceExit(GLFWwindow *window,glm::mat4 *matrices, Model obj, int getAmount) {
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+		glm::mat4 model = matrices[1];
+		model = glm::translate(model, glm::vec3(888, 0, 888));
+		matrices[1] = model;
+		writeToPos(matrices, obj, getAmount);
+	}
+}
