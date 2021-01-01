@@ -19,8 +19,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void load(Model obj, int *amount,float scale);
 void load_textures(Model obj, int amount);
-
-
+bool detectColision(float obj1x, float obj2x, float obj1z, float obj2z, float sumRad);
+void rollback(bool *firstTime, float colDistance, float *lastestX, float *lastestZ);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -42,7 +42,7 @@ float matrixF[30 * 5][30 * 5];
 
 // lighting
 glm::vec3 lightPos;
-
+glm::vec3 startPosCamera;
 int main()
 {
 	// glfw: initialize and configure
@@ -86,7 +86,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 
-	//-------------------------BEGIN------------//
+	//-----------BEGIN------------//
 
 
 	CriaLab(matrix);
@@ -95,6 +95,7 @@ int main()
 		int j = rand() % 30;
 		if (!matrix[i][j]) {
 			camera.Position = glm::vec3(i + rand() % 100 /100, 0, j + rand() % 100 / 100);
+			startPosCamera = camera.Position;
 			lightPos = camera.Position;
 			lightPos.y = 1;
 			break; 
@@ -102,7 +103,7 @@ int main()
 	}
 
 
-	// build and compile our shader zprogram
+	// build and compile our shader program
 	// ------------------------------------
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
 	Shader lampShader2("shaders/2.1.lamp2.vs", "shaders/2.1.lamp2.fs");
@@ -175,6 +176,7 @@ int main()
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
 	// lightsource 2
 	unsigned int lightVAO2;
 	glGenVertexArrays(1, &lightVAO2);
@@ -185,6 +187,9 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	bool firstTime = true;
+	float lastXthis = 0;
+	float lastZtihs = 0;
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -211,7 +216,8 @@ int main()
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 
-		{// also draw the lamp object
+		//Draws the first lamp
+		{
 			lampShader.use();
 			lampShader.setMat4("projection", projection);
 			lampShader.setMat4("view", view);
@@ -222,17 +228,17 @@ int main()
 			glBindVertexArray(lightVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		
+		//Draws the second land
 		{
 			lampShader2.use();
 			lampShader2.setMat4("projection", projection);
 			lampShader2.setMat4("view", view);
 			model = glm::mat4(1.0f);
 			glm::vec3 thisview = camera.Position;
-			thisview.y += 1;
+			thisview.y -= 10;
 			thisview.x = camera.Position.x - 1;
 			model = glm::translate(model, glm::vec3(thisview));
-			model = glm::scale(model, glm::vec3(0.5f)); // a smaller cube
+			model = glm::scale(model, glm::vec3(0.2f)); 
 			lampShader2.setMat4("model", model);
 			glBindVertexArray(lightVAO2);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -243,8 +249,13 @@ int main()
 		cube.setMat4("view", view);
 		cube.use();
 		cube.setInt("texture_diffuse1", 0);
+		
+		// Handles the wall objects
+		
 
 		load_textures(wall,amount);
+		//sistema de colisao
+		rollback(&firstTime, 0.85, &lastXthis, &lastZtihs);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -264,6 +275,37 @@ int main()
 	return 0;
 }
 
+bool detectColision(float obj1x, float obj2x, float obj1z, float obj2z,float sumRad) {
+	if (std::abs(obj1x - obj2x) < sumRad)
+		if (std::abs(obj1z - obj2z) < sumRad)
+			return true;
+	return false;
+}
+
+void rollback(bool *firstTime,float colDistance,float *lastestX, float *lastestZ) {
+	if (matrix[(int)lightPos.x][(int)lightPos.z]) {
+		if (detectColision(lightPos.x, (int)lightPos.x, lightPos.z, (int)lightPos.z, 0.92)) {
+			std::cout << "x: " << lightPos.x << " z: " << lightPos.z << " Colision" << std::endl;
+			if (*firstTime) {
+				camera.Position.x = startPosCamera.x;
+				camera.Position.z = startPosCamera.z;
+				*firstTime = false;
+			}
+			else {
+				camera.Position.x = *lastestX;
+				camera.Position.z = *lastestZ;
+			}
+			lightPos.x = camera.Position.x;
+			lightPos.z = camera.Position.z;
+
+		}
+		else {
+			*lastestX = camera.Position.x;
+			*lastestZ = camera.Position.z;
+		}
+	}
+}
+
 void load_textures(Model obj,int amount) {
 	for (unsigned int i = 0; i < obj.meshes.size(); i++)
 	{
@@ -273,12 +315,14 @@ void load_textures(Model obj,int amount) {
 		);
 	}
 }
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 		camera.Position.y = 55;
 	else 
