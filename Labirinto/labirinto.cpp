@@ -174,6 +174,7 @@ int main()
 	// -----------
 	float movementSpeed = camera.MovementSpeed;
 	bool collided = false;
+	//bool isDark = false;
 	while (!glfwWindowShouldClose(window))
 	{
 		
@@ -182,14 +183,17 @@ int main()
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		//if ((int)currentFrame % 3 == 0) isDark = !isDark;
+		
 
+		//cout << currentFrame << endl;
 		// input
 		processInput(window);
-
-		// render
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//if (!isDark) {
+			// render
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//}
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -234,7 +238,8 @@ int main()
 		// Handles the wall objects
 
 		produceExit(window, modelMatrices, wall, amount);
-		load_textures(wall, amount);
+		 load_textures(wall, amount);
+		//else hideWorld();
 		if (saida.second) {
 			cubePos[saida.first] = std::make_pair(999.0f, 999.0f);
 		}
@@ -249,10 +254,14 @@ int main()
 		}
 		if (!collided) lastPos = camera.Position;
 		
+
+		
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		 //hideWorld();
 	}
 
 	// optional: de-allocate all resources once they've outlived their purpose:
