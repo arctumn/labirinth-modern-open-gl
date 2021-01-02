@@ -463,6 +463,7 @@ void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmou
 	}
 }
 
+
 void hideWorld() {
 	if (glfwGetTime())
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
