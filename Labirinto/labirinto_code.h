@@ -21,7 +21,11 @@ const unsigned int SCR_HEIGHT = 600;
 
 const pair<float, float> BOTTOM_LEFT  = std::make_pair(-0.5f, -0.5f);
 
+//flag do noclip
+bool noclip = false;
 
+//flag Saida com o objeto da colision
+pair <int, bool> saida = std::make_pair(0, false);
 
 //UNIT SIZE
 const float UNIT_SIZE = 1.0f;
@@ -38,8 +42,8 @@ float lastFrame = 0.0f;
 
 //Pos Matrix
 
-int matrix[30][30];
-float matrixF[30 * 5][30 * 5];
+int matrix[sized][sized];
+//float matrixF[siz * 5][30 * 5];
 
 // lighting
 glm::vec3 lightPos;

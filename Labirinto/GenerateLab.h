@@ -3,7 +3,7 @@
 #include <time.h>
 #include <chrono>
 #include <thread>
-#define sized 30
+#define sized 5
 #define pd 5 // Probabilidade de manter a direção
 #define pb 4 // probabilidade de criar um branch
 #define GREEN     "\033[32m"      /* Red */
@@ -162,8 +162,8 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 		if (branch == false) { // para o caminho principal
 			while (VerificaDirecao(a, d, i, j)) {
 				if (cont1 == 1) {
-					d == AddDirecao(d);
-					d == AddDirecao(d);
+					d = AddDirecao(d);
+					d = AddDirecao(d);
 				}
 				if (cont1 == 2) {
 					return;
@@ -176,7 +176,7 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 			while (VerificaDirecao(a, d, i, j)) {
 				if (cont1 == 1) {
 					d == AddDirecao(d);
-					d == AddDirecao(d);
+					d = AddDirecao(d);
 				}
 				if (cont1 == 2) {
 					return;

@@ -52,7 +52,7 @@ int main()
 		int i = rand() % sized;
 		int j = rand() % sized;
 		if (!matrix[i][j]) {
-			camera.Position = glm::vec3(i + rand() % 100 /100, 0, j + rand() % 100 / 100);
+			camera.Position = glm::vec3(i + rand() % 100 / 100, 0, j + rand() % 100 / 100);
 			startPosCamera = camera.Position;
 			lightPos = camera.Position;
 			lightPos.y = 1;
@@ -87,9 +87,7 @@ int main()
 					h++;
 			}
 		}
-	for (int i = 0; i < amount; i++) {
-		cout << "valor das posicoes\nx: " << cubePos[i].first << " z: " << cubePos[i].second << endl;
-	}
+
 	//load(wall,&amount,0.5f,modelMatrices);
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
@@ -170,6 +168,7 @@ int main()
 	bool firstTime = true;
 	float lastXthis = 0;
 	float lastZtihs = 0;
+
 	glm::vec3 lastPos(camera.Position);
 	// render loop
 	// -----------
@@ -236,15 +235,20 @@ int main()
 
 		produceExit(window, modelMatrices, wall, amount);
 		load_textures(wall, amount);
-
-		for(int i = 0; i < amount;i++)
-			if (pointInside(camera.Position.x, camera.Position.z, cubePos[i].first, cubePos[i].second)) {
-				camera.Position = lastPos;
-				collided = true;
-				break;
-			}
+		if (saida.second) {
+			cubePos[saida.first] = std::make_pair(999.0f, 999.0f);
+		}
+		if (!noclip) {
+			for (int i = 0; i < amount; i++)
+				if (pointInside(camera.Position.x, camera.Position.z, cubePos[i].first, cubePos[i].second)) {
+					camera.Position = lastPos;
+					collided = true;
+					break;
+				}
+				else collided = false;
+		}
 		if (!collided) lastPos = camera.Position;
-		else collided = false;
+		
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
@@ -256,7 +260,7 @@ int main()
 	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteVertexArrays(1, &lightVAO2);
 	glDeleteBuffers(1, &VBO);
-
+	free(cubePos);
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
 	glfwTerminate();
@@ -281,50 +285,43 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
+		noclip = true;
+		camera.MovementSpeed = 10.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+		noclip = false;
+		camera.MovementSpeed = 2.5f;
+		
+	}
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-		camera.Position.y = 55;
-	else
-	{
-		camera.Position.y = 0;
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			camera.ProcessKeyboard(FORWARD, deltaTime);
-			lightPos.x = camera.Position.x;
-			lightPos.y = 1;
-			lightPos.z = camera.Position.z;
-		}
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			camera.ProcessKeyboard(BACKWARD, deltaTime);
-			lightPos.x = camera.Position.x;
-			lightPos.y = 1;
-			lightPos.z = camera.Position.z;
-		}
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			camera.ProcessKeyboard(LEFT, deltaTime);
-			lightPos.x = camera.Position.x;
-			lightPos.y = 1;
-			lightPos.z = camera.Position.z;
-		}
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			camera.ProcessKeyboard(RIGHT, deltaTime);
-			lightPos.x = camera.Position.x;
-			lightPos.y = 1;
-			lightPos.z = camera.Position.z;
-		}
-		//calculate distance between 2 points
-		if (glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-			//glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
-			if (firstClick) {
-				pos1.first = camera.Position.x;
-				pos1.second = camera.Position.z;
-				firstClick = false;
-			}
-			else 
-			{
-				showDistance(pos1.first, pos1.second, camera.Position.x, camera.Position.z);
-				firstClick = true;
-			}
-		}
+		camera.Position.y = 30;
+	else if (!noclip) camera.Position.y = 0;
+
+	
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+		lightPos.x = camera.Position.x;
+		lightPos.y = 1;
+		lightPos.z = camera.Position.z;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		lightPos.x = camera.Position.x;
+		lightPos.y = 1;
+		lightPos.z = camera.Position.z;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		camera.ProcessKeyboard(LEFT, deltaTime);
+		lightPos.x = camera.Position.x;
+		lightPos.y = 1;
+		lightPos.z = camera.Position.z;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+		lightPos.x = camera.Position.x;
+		lightPos.y = 1;
+		lightPos.z = camera.Position.z;
 	}
 }
 
@@ -343,16 +340,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)(xpos - lastX);
+	float yoffset = (float)(lastY - ypos); // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
@@ -366,18 +363,18 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 {
-	int len = sized;
+	unsigned int len = sized;
 
 	unsigned int amount = 0;
 
 	//calcula a quantitades de nao p
-	for (int i = 0; i < len; i++)
-		for (int j = 0; j < len; j++)
+	for (unsigned int i = 0; i < len; i++)
+		for (unsigned int j = 0; j < len; j++)
 			if (matrix[i][j]) amount++;
 
 	*getAmount = amount;
 	matrices = new glm::mat4[amount];
-	srand(glfwGetTime()); // initialize random seed	
+	srand((int)glfwGetTime()); // initialize random seed	
 
 	glm::vec3 position(0, 0, 0);
 	bool firstH = true;
@@ -394,14 +391,14 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 				model = glm::translate(model, glm::vec3(i, 0, j));
 			model = glm::scale(model, glm::vec3(scale));
 			if (firstH) {
-				int tamanho = sqrtf(powf(0, 2.0) + powf(0, 2.0));
+				int tamanho = (int) sqrtf(powf(0, 2.0) + powf(0, 2.0));
 				std::cout << "\nLado do model " << tamanho << " coordenadas x: " << i << " z: " << j;
-				position.x = i;
-				position.z = j;
+				position.x =(float) i;
+				position.z =(float) j;
 				firstH = false;
 			}
 			else {
-				int tamanho = sqrtf(powf(i - position.x, 2.0) + powf(j - position.z, 2.0));
+				int tamanho = (int) sqrtf(powf(i - position.x, 2.0) + powf(j - position.z, 2.0));
 				std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
 				position.x = i;
 				position.z = j;
@@ -460,12 +457,14 @@ void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount) {
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 		matrices[1] = glm::translate(matrices[1],glm::vec3(-0.5,0,0));
+		saida.first = 1;
+		saida.second = true;
 		writeToPos(matrices, obj, getAmount);
 	}
 }
 
 void hideWorld() {
-	if (glfwGetTime)
+	if (glfwGetTime())
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
