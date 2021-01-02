@@ -1,8 +1,14 @@
 ﻿#pragma once
 #include "./labirinto_code.h"
+using namespace irrklang;
+
+ISoundEngine *SoundEngine = createIrrKlangDevice();
 
 int main()
 {
+
+	
+
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
@@ -170,11 +176,16 @@ int main()
 	float lastZtihs = 0;
 
 	glm::vec3 lastPos(camera.Position);
-	// render loop
-	// -----------
+
 	float movementSpeed = camera.MovementSpeed;
 	bool collided = false;
-	//bool isDark = false;
+
+
+
+	std::thread music_player(playMusic);
+
+	// render loop
+	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
 		
@@ -269,9 +280,10 @@ int main()
 	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteVertexArrays(1, &lightVAO2);
 	glDeleteBuffers(1, &VBO);
-	free(cubePos);
+	std::free(cubePos);
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
+	music_player.join();
 	glfwTerminate();
 	return 0;
 }
@@ -490,4 +502,8 @@ bool pointInside(float point_x, float point_z, float box_x, float box_z) {
 		if (point_z >= box_z && point_z <= box_z + UNIT_SIZE + 0.1)
 			return true;
 	return false;
+}
+
+void playMusic() {
+	SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3",true);
 }

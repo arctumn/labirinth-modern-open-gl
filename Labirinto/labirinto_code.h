@@ -13,6 +13,8 @@
 #include "GenerateLab.h"
 
 
+#include <audio/irrKlang.h>
+
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -64,3 +66,5 @@ void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmou
 void hideWorld();
 void showDistance(float x1, float z1, float x2, float z2);
 bool pointInside(float point_x, float point_z, float box_x, float box_z);
+
+void playMusic();
