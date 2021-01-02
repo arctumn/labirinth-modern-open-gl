@@ -1,50 +1,6 @@
-﻿#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+﻿#pragma once
+#include "./labirinto_code.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <shader_m.h>
-#include <camera.h>
-#include <model.h>
-#include <iostream>
-#include "GenerateLab.h"
-
-
-
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
-glm::mat4 * load(Model obj, int *amount,float scale, glm::mat4 * matrices);
-void load_textures(Model obj, int amount);
-void writeToPos(glm::mat4 *matrices, Model obj, int getAmount);
-void produceExit(GLFWwindow *window,glm::mat4 *matrices, Model obj, int getAmount);
-
-
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-
-//Pos Matrix
-
-int matrix[30][30];
-float matrixF[30 * 5][30 * 5];
-
-// lighting
-glm::vec3 lightPos;
-glm::vec3 startPosCamera;
 int main()
 {
 	// glfw: initialize and configure
@@ -201,7 +157,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		// per-frame time logic
-	
+
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -210,7 +166,6 @@ int main()
 		processInput(window);
 
 		// render
-		// ------
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -243,22 +198,22 @@ int main()
 			thisview.y -= 10;
 			thisview.x = camera.Position.x - 1;
 			model = glm::translate(model, glm::vec3(thisview));
-			model = glm::scale(model, glm::vec3(0.2f)); 
+			model = glm::scale(model, glm::vec3(0.2f));
 			lampShader.setMat4("model", model);
 			glBindVertexArray(lightVAO2);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-
-		cube.use();
-		cube.setMat4("projection", projection);
-		cube.setMat4("view", view);
-		cube.use();
-		cube.setInt("texture_diffuse1", 0);
-		
+		{
+			cube.use();
+			cube.setMat4("projection", projection);
+			cube.setMat4("view", view);
+			cube.use();
+			cube.setInt("texture_diffuse1", 0);
+		}
 		// Handles the wall objects
-		
+
 		produceExit(window, modelMatrices, wall, amount);
-		load_textures(wall,amount);
+		load_textures(wall, amount);
 		//sistema de colisao
 		//rollback(&firstTime, 1.5, &lastXthis, &lastZtihs);
 
@@ -281,7 +236,8 @@ int main()
 }
 
 
-void load_textures(Model obj,int amount) {
+
+void load_textures(Model obj, int amount) {
 	for (unsigned int i = 0; i < obj.meshes.size(); i++)
 	{
 		glBindVertexArray(obj.meshes[i].VAO);
@@ -297,10 +253,10 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	
+
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
 		camera.Position.y = 55;
-	else 
+	else
 	{
 		camera.Position.y = 0;
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -311,7 +267,7 @@ void processInput(GLFWwindow *window)
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 			camera.ProcessKeyboard(BACKWARD, deltaTime);
-			lightPos.x =  camera.Position.x;
+			lightPos.x = camera.Position.x;
 			lightPos.y = 1;
 			lightPos.z = camera.Position.z;
 		}
@@ -369,9 +325,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 {
 	int len = sized;
-	
+
 	unsigned int amount = 0;
-	
+
 	//calcula a quantitades de nao p
 	for (int i = 0; i < len; i++)
 		for (int j = 0; j < len; j++)
@@ -385,7 +341,7 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 	bool firstH = true;
 	int a = 0;
 	for (unsigned int i = 0; i < len; i++)
-		for (unsigned int j = 0; j < len; j++) 
+		for (unsigned int j = 0; j < len; j++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			// only calculates what is needed skips positioning useless blocks
@@ -403,13 +359,13 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 				firstH = false;
 			}
 			else {
-				int tamanho = sqrtf(powf(i-position.x, 2.0) + powf(j-position.z, 2.0));
+				int tamanho = sqrtf(powf(i - position.x, 2.0) + powf(j - position.z, 2.0));
 				std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
 				position.x = i;
 				position.z = j;
 			}
 			//}
-			
+
 			//glm::length(model);
 			// 4. now add to list of matrices
 			matrices[a] = model;
@@ -459,9 +415,15 @@ void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 
 }
 
-void produceExit(GLFWwindow *window,glm::mat4 *matrices, Model obj, int getAmount) {
+void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount) {
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 		matrices[1] = (glm::mat4)0;
 		writeToPos(matrices, obj, getAmount);
 	}
+}
+
+void hideWorld() {
+	if (glfwGetTime)
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

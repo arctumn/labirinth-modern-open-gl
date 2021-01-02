@@ -26,5 +26,8 @@
     <ClInclude Include="GenerateLab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="labirinto_code.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
