@@ -49,8 +49,8 @@ int main()
 
 	CriaLab(matrix);
 	while (true) {
-		int i = rand() % 30;
-		int j = rand() % 30;
+		int i = rand() % sized;
+		int j = rand() % sized;
 		if (!matrix[i][j]) {
 			camera.Position = glm::vec3(i + rand() % 100 /100, 0, j + rand() % 100 / 100);
 			startPosCamera = camera.Position;
@@ -71,8 +71,26 @@ int main()
 	int amount = 0;
 	glm::mat4 *modelMatrices = NULL;
 	modelMatrices = load(wall, &amount, 0.5f, modelMatrices);
-
-	//oad(wall,&amount,0.5f,modelMatrices);
+	const int value = amount;
+	pair<float, float> *cubePos = (pair<float, float> *)calloc(amount,sizeof(pair<float,float>));
+	int h = 0;
+	for (unsigned int i = 0; i < sized; i++)
+		for (unsigned int j = 0; j < sized; j++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			// only calculates what is needed skips positioning useless blocks
+			if (!matrix[i][j])
+				continue;
+			//model = glm::translate(model, glm::vec3(i, 100,j));
+			else {
+				cubePos[h] = std::make_pair(BOTTOM_LEFT.first+i*UNIT_SIZE, BOTTOM_LEFT.second + j * UNIT_SIZE);
+					h++;
+			}
+		}
+	for (int i = 0; i < amount; i++) {
+		cout << "valor das posicoes\nx: " << cubePos[i].first << " z: " << cubePos[i].second << endl;
+	}
+	//load(wall,&amount,0.5f,modelMatrices);
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -152,12 +170,16 @@ int main()
 	bool firstTime = true;
 	float lastXthis = 0;
 	float lastZtihs = 0;
+	glm::vec3 lastPos(camera.Position);
 	// render loop
 	// -----------
+	float movementSpeed = camera.MovementSpeed;
+	bool collided = false;
 	while (!glfwWindowShouldClose(window))
 	{
+		
 		// per-frame time logic
-
+		//std::cout << "Valor de x:" << camera.Position.x << " Valor de z: " << camera.Position.z << std::endl;
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -188,7 +210,7 @@ int main()
 			glBindVertexArray(lightVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		//Draws the second land
+		//Draws the second lamp
 		{
 			lampShader.use();
 			lampShader.setMat4("projection", projection);
@@ -197,8 +219,8 @@ int main()
 			glm::vec3 thisview = camera.Position;
 			thisview.y -= 10;
 			thisview.x = camera.Position.x - 1;
-			model = glm::translate(model, glm::vec3(thisview));
-			model = glm::scale(model, glm::vec3(0.2f));
+			model = glm::translate(model, glm::vec3(-3,0,0));
+			model = glm::scale(model, glm::vec3(1.0f));
 			lampShader.setMat4("model", model);
 			glBindVertexArray(lightVAO2);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -214,9 +236,15 @@ int main()
 
 		produceExit(window, modelMatrices, wall, amount);
 		load_textures(wall, amount);
-		//sistema de colisao
-		//rollback(&firstTime, 1.5, &lastXthis, &lastZtihs);
 
+		for(int i = 0; i < amount;i++)
+			if (pointInside(camera.Position.x, camera.Position.z, cubePos[i].first, cubePos[i].second)) {
+				camera.Position = lastPos;
+				collided = true;
+				break;
+			}
+		if (!collided) lastPos = camera.Position;
+		else collided = false;
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
@@ -282,6 +310,20 @@ void processInput(GLFWwindow *window)
 			lightPos.x = camera.Position.x;
 			lightPos.y = 1;
 			lightPos.z = camera.Position.z;
+		}
+		//calculate distance between 2 points
+		if (glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
+			//glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+			if (firstClick) {
+				pos1.first = camera.Position.x;
+				pos1.second = camera.Position.z;
+				firstClick = false;
+			}
+			else 
+			{
+				showDistance(pos1.first, pos1.second, camera.Position.x, camera.Position.z);
+				firstClick = true;
+			}
 		}
 	}
 }
@@ -353,7 +395,7 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 			model = glm::scale(model, glm::vec3(scale));
 			if (firstH) {
 				int tamanho = sqrtf(powf(0, 2.0) + powf(0, 2.0));
-				std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
+				std::cout << "\nLado do model " << tamanho << " coordenadas x: " << i << " z: " << j;
 				position.x = i;
 				position.z = j;
 				firstH = false;
@@ -417,7 +459,7 @@ void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 
 void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount) {
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-		matrices[1] = (glm::mat4)0;
+		matrices[1] = glm::translate(matrices[1],glm::vec3(-0.5,0,0));
 		writeToPos(matrices, obj, getAmount);
 	}
 }
@@ -426,4 +468,17 @@ void hideWorld() {
 	if (glfwGetTime)
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void showDistance(float x1, float z1, float x2, float z2) {
+	cout << "Distance = " << sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f)) << endl;
+}
+
+
+
+bool pointInside(float point_x, float point_z, float box_x, float box_z) {
+	if (point_x >= box_x && point_x <= box_x + UNIT_SIZE + 0.1)
+		if (point_z >= box_z && point_z <= box_z + UNIT_SIZE + 0.1)
+			return true;
+	return false;
 }
