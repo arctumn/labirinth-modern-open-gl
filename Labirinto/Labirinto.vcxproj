@@ -23,32 +23,32 @@
     <ProjectGuid>{6CF529D1-C64A-4B11-A918-ED4382F392B9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Labirinto</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -75,16 +75,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\silve\source\repos\Labirinto\openglLibraries\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\silve\source\repos\Labirinto\openglLibraries\Libraries;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\MR2FS\Documents\salame\labirinth-modern-open-gl-master\labirinth-modern-open-gl-master\openglLibraries\Libraries;C:\Users\MR2FS\Documents\salame\labirinth-modern-open-gl-master\labirinth-modern-open-gl-master\openglLibraries\Libraries;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\MR2FS\Documents\salame\labirinth-modern-open-gl-master\labirinth-modern-open-gl-master\openglLibraries\include;C:\Users\MR2FS\Documents\salame\labirinth-modern-open-gl-master\labirinth-modern-open-gl-master\openglLibraries\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\silve\source\repos\Labirinto\openglLibraries\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\silve\source\repos\Labirinto\openglLibraries\Libraries;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\MR2FS\Documents\salame\labirinth-modern-open-gl-master\labirinth-modern-open-gl-master\openglLibraries\include;C:\Users\silve\source\repos\Labirinto\openglLibraries\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\MR2FS\Documents\salame\labirinth-modern-open-gl-master\labirinth-modern-open-gl-master\openglLibraries\Libraries;C:\Users\silve\source\repos\Labirinto\openglLibraries\Libraries;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,7 +114,11 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glfw3dll.lib;opengl32.lib;assimp-vc141-mtd.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib
+;glfw3dll.lib;
+opengl32.lib;
+assimp-vc141-mtd.lib;
+irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

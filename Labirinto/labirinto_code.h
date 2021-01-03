@@ -27,7 +27,10 @@ const pair<float, float> BOTTOM_LEFT  = std::make_pair(-0.5f, -0.5f);
 bool noclip = false;
 
 //flag Saida com o objeto da colision
-pair <int, bool> saida = std::make_pair(0, false);
+pair<int, int> pos; // make_pair(posX, posZ);
+pair<int, bool> colldisable; // make_pair(indice_que_represanta_pair_pos, false);
+pair<pair<int,int>,pair<int,bool>> saida = make_pair(pos,colldisable);
+int countSaida = 0;
 
 //UNIT SIZE
 const float UNIT_SIZE = 1.0f;
@@ -44,7 +47,7 @@ float lastFrame = 0.0f;
 
 //Pos Matrix
 
-int matrix[sized][sized];
+int** matrix;
 //float matrixF[siz * 5][30 * 5];
 
 // lighting

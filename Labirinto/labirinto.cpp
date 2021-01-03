@@ -22,7 +22,7 @@ int main()
 
 	// glfw window creation
 	// --------------------
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Labirinto", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -52,7 +52,8 @@ int main()
 
 	//-----------BEGIN------------//
 
-
+	matrix = new int* [sized];
+	for (int i = 0; i < sized; i++) matrix[i] = new int[sized];
 	CriaLab(matrix);
 	while (true) {
 		int i = rand() % sized;
@@ -65,8 +66,8 @@ int main()
 			break; 
 		}
 	}
-
-
+	saida.first = EscolheSaida(matrix, camera); // Candidados para Saídas
+	std::cout << "\nValores da saida: " << saida.first.first << ", " << saida.first.second << "\n";
 	// build and compile our shader program
 	// ------------------------------------
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
@@ -90,7 +91,7 @@ int main()
 			//model = glm::translate(model, glm::vec3(i, 100,j));
 			else {
 				cubePos[h] = std::make_pair(BOTTOM_LEFT.first+i*UNIT_SIZE, BOTTOM_LEFT.second + j * UNIT_SIZE);
-					h++;
+				h++;
 			}
 		}
 
@@ -251,8 +252,8 @@ int main()
 		produceExit(window, modelMatrices, wall, amount);
 		 load_textures(wall, amount);
 		//else hideWorld();
-		if (saida.second) {
-			cubePos[saida.first] = std::make_pair(999.0f, 999.0f);
+		if (saida.second.second) {
+			cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
 		}
 		if (!noclip) {
 			for (int i = 0; i < amount; i++)
@@ -281,6 +282,10 @@ int main()
 	glDeleteVertexArrays(1, &lightVAO2);
 	glDeleteBuffers(1, &VBO);
 	std::free(cubePos);
+	for (size_t i = 0; i < sized; i++)
+	{
+		std::free(matrix[i]);
+	}
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
 	music_player.join();
@@ -295,7 +300,7 @@ void load_textures(Model obj, int amount) {
 	{
 		glBindVertexArray(obj.meshes[i].VAO);
 		glDrawElementsInstanced(
-			GL_TRIANGLES, obj.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount
+			GL_TRIANGLES, (GLsizei) obj.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount
 		);
 	}
 }
@@ -379,7 +384,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float) yoffset);
 }
 
 glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
@@ -408,19 +413,24 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 			if (!matrix[i][j])
 				continue;
 			//model = glm::translate(model, glm::vec3(i, 100,j));
-			else
-				model = glm::translate(model, glm::vec3(i, 0, j));
+			else {
+				if (i == saida.first.first && j == saida.first.second) {
+					saida.second.first = a;
+					saida.second.second = false;
+				}
+			model = glm::translate(model, glm::vec3(i, 0, j));
+		}
 			model = glm::scale(model, glm::vec3(scale));
 			if (firstH) {
 				int tamanho = (int) sqrtf(powf(0, 2.0) + powf(0, 2.0));
-				std::cout << "\nLado do model " << tamanho << " coordenadas x: " << i << " z: " << j;
+				//std::cout << "\nLado do model " << tamanho << " coordenadas x: " << i << " z: " << j;
 				position.x =(float) i;
 				position.z =(float) j;
 				firstH = false;
 			}
 			else {
 				int tamanho = (int) sqrtf(powf(i - position.x, 2.0) + powf(j - position.z, 2.0));
-				std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
+				//std::cout << "\nTamanho do model: " << tamanho << " coordenadas x: " << i << " z: " << j;
 				position.x = i;
 				position.z = j;
 			}
@@ -475,13 +485,20 @@ void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 
 }
 
-void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount) {
-	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-		matrices[1] = glm::translate(matrices[1],glm::vec3(-0.5,0,0));
-		saida.first = 1;
-		saida.second = true;
+void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmount) {
+	if(saida.second.second)
+		return;
+
+	float distancia = sqrtf(powf(saida.first.first - camera.Position.x, 2.0) + powf(saida.first.second - camera.Position.z, 2.0));
+	if (distancia < (float) sized/3){
+		std::cout << "\nDistancia: " << distancia << "\n";
+		matrices[saida.second.first] = glm::translate(matrices[saida.second.first], glm::vec3(-0.01, 0, 0));
 		writeToPos(matrices, obj, getAmount);
+		if(countSaida > 500)
+			saida.second.second = true;
+		countSaida++;
 	}
+
 }
 
 
@@ -498,8 +515,8 @@ void showDistance(float x1, float z1, float x2, float z2) {
 
 
 bool pointInside(float point_x, float point_z, float box_x, float box_z) {
-	if (point_x >= box_x && point_x <= box_x + UNIT_SIZE + 0.1)
-		if (point_z >= box_z && point_z <= box_z + UNIT_SIZE + 0.1)
+	if (point_x >= box_x && point_x <= box_x + UNIT_SIZE + 0.1f)
+		if (point_z >= box_z && point_z <= box_z + UNIT_SIZE + 0.1f)
 			return true;
 	return false;
 }
