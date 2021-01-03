@@ -3,7 +3,7 @@
 #include <time.h>
 #include <chrono>
 #include <thread>
-#define sized 250
+#define sized 500
 #define pd 5 // Probabilidade de manter a direção
 #define pb 4 // probabilidade de criar um branch
 #define GREEN     "\033[32m"      /* Red */
@@ -14,7 +14,7 @@
 //     0   2            <- ESQUERDA E DIREITA
 //       3              <- BAIXO
 
-void VerGrelha(int a[sized][sized]) {
+void VerGrelha(int **a) {
 	int x = 0;
 	while (x < 3) {
 		std::cout << "\n";
@@ -36,7 +36,8 @@ void VerGrelha(int a[sized][sized]) {
 	}
 }
 
-void PreencheGrelha(int(&a)[sized][sized]) {
+void PreencheGrelha(int **a) {
+
 	for (size_t i = 0; i < sized; i++)
 		for (size_t j = 0; j < sized; j++)
 			a[i][j] = 1;
@@ -69,7 +70,56 @@ int EscolheDirecao(int d, bool limitado) {
 	return d;
 }
 
-bool VerificaDirecao(int a[sized][sized], int d, int i, int j) {
+bool calculaDistancia(int pos1, int pos2, Camera camera) {
+	if (sqrtf(powf(pos1 - camera.Position.x, 2.0) + powf(pos2 - camera.Position.z, 2.0) < (float) sized/4)) {
+		//std::cout << "\nReturnei falso\n";
+		return false; // Se demasiado perto
+	}
+	return true;
+}
+
+pair<int,int> EscolheSaida(int **m, Camera cam) {
+
+	//std::cout << "\nValores da camera: " << cam.Position.x << ", " << cam.Position.z << "\n";
+
+	pair<int, int> resultado[sized*4 -4];
+	int cont = 0;
+	for (int i = 0; i < sized - 1; i++) {
+		for (int j = 0; j < sized - 1; j++) {
+			if (i == 0 && j == 0 || i == 0 && j == sized - 1 || i == sized - 1 && j == 0 || i == sized - 1 && j == sized - 1)
+				continue;
+			if(i == 0 && calculaDistancia(i,j, cam)){
+				if (m[i + 1][j] == 0) {
+					resultado[cont] = make_pair(i, j);
+					cont++;
+				}
+			}
+			else if (i == (sized - 1) && calculaDistancia(i, j, cam)) {
+				if (m[i - 1][j] == 0) {
+					resultado[cont] = make_pair(i, j);
+					cont++;
+				}
+			}
+			else if (j == 0 && calculaDistancia(i, j, cam)) {
+				if (m[i][j + 1] == 0) {
+					resultado[cont] = make_pair(i, j);
+					cont++;
+				}
+			}
+			else if (j == (sized - 1) && calculaDistancia(i, j, cam)) {
+				if (m[i][j - 1] == 0) {
+					resultado[cont] = make_pair(i, j);
+					cont++;
+				}
+			}
+		}
+	}
+	srand(time(NULL));
+	int indice = rand() % cont+1;
+	return resultado[indice];
+}
+
+bool VerificaDirecao(int **a, int d, int i, int j) {
 	if (d == 0) {
 		if (a[i][j - 1] == 0 || j - 1 == 0) {
 			return true;
@@ -93,7 +143,7 @@ bool VerificaDirecao(int a[sized][sized], int d, int i, int j) {
 	return false;
 }
 
-bool VerificaConexao(int a[sized][sized], int d, int i, int j) {
+bool VerificaConexao(int **a, int d, int i, int j) {
 	if (d == 0) {
 		if (a[i][j - 1] == 0 || a[i][j - 2] == 0 || a[i + 1][j - 1] == 0 || a[i - 1][j - 1] == 0) {
 			return true;
@@ -117,8 +167,7 @@ bool VerificaConexao(int a[sized][sized], int d, int i, int j) {
 	return false;
 }
 
-void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd, int contb, bool branch) {
-	// while (cont < sized / 2) {
+void CriaCaminho(int **a, int i, int j, int d, int contd, int contb, bool branch) {
 	while (true) {
 		// std::this_thread::sleep_for(std::chrono::milliseconds(125)); -> Activar para ver por turnos
 		int dAnt = 0;
@@ -132,23 +181,23 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 		if (contb < 1) {
 			if (!VerificaDirecao(a, AddDirecao(d), i, j) && !VerificaDirecao(a, SubDirecao(d), i, j)) {
 				if ((rand() % 10) > 8) {
-					CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
-					CriaCaminho(a, i, j, AddDirecao(d), 0, 3, 3, true);
+					CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true);
+					CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true);
 				}
 				else {
 					if ((rand() % 10) > 5)
-						CriaCaminho(a, i, j, AddDirecao(d), 0, 3, 3, true);
+						CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true);
 					else
-						CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
+						CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true);
 				}
 				contb = rand() % 4 + 2;
 			}
 			else if (!VerificaDirecao(a, AddDirecao(d), i, j)) {
-				CriaCaminho(a, i, j, AddDirecao(d), 0, 3, 3, true);
+				CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true);
 				contb = rand() % 4 + 2;
 			}
 			else if (!VerificaDirecao(a, SubDirecao(d), i, j)) {
-				CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
+				CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true);
 				contb = rand() % 4 + 2;
 			}
 			//else
@@ -175,7 +224,7 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 		else if (branch == true) {
 			while (VerificaDirecao(a, d, i, j)) {
 				if (cont1 == 1) {
-					d == AddDirecao(d);
+					d = AddDirecao(d);
 					d = AddDirecao(d);
 				}
 				if (cont1 == 2) {
@@ -188,25 +237,25 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 				if ((rand() % 10) > 5) {
 					if (!VerificaDirecao(a, AddDirecao(d), i, j) && !VerificaDirecao(a, SubDirecao(d), i, j)) {
 						if ((rand() % 10) > 8) {
-							CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
-							CriaCaminho(a, i, j, AddDirecao(d), 0, 3, 3, true);
+							CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true);
+							CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true);
 						}
 						else {
 							if ((rand() % 10) > 5)
-								CriaCaminho(a, i, j, AddDirecao(d), 0, 3, 3, true);
+								CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true);
 							else
-								CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
+								CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true);
 						}
 					}
 					else if (!VerificaDirecao(a, AddDirecao(d), i, j)) {
-						CriaCaminho(a, i, j, AddDirecao(d), 0, 3, 3, true);
+						CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true);
 					}
 					else if (!VerificaDirecao(a, SubDirecao(d), i, j)) {
-						CriaCaminho(a, i, j, SubDirecao(d), 0, 3, 3, true);
+						CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true);
 					}
 					return;
 				}
-				if ((rand() % 10) > 5)
+				if ((rand() % 100) > 5)
 					return; // <- Retirar para não ter becos
 			}
 		}
@@ -245,30 +294,31 @@ void CriaCaminho(int(&a)[sized][sized], int i, int j, int d, int cont, int contd
 			a[i + 1][j] = 0;
 			i = i + 1;
 		}
-		//VerGrelha(a); -> Activar para ver por turnos
-		cont++;
+		//VerGrelha(a); //-> Activar para ver por turnos
 		contd--;
 		contb--;
 	}
 }
 
-void CriaLab(int(&a)[sized][sized]) {
+void CriaLab(int **a) {
 	int i, j = 0;
+	srand(time(NULL));
 	PreencheGrelha(a);
 	i = rand() % (sized - 3) + 2;
-	std::cout << "%i" << i;
+	//std::cout << "%i" << i;
 	j = rand() % (sized - 3) + 2;
-	std::cout << "%i" << j; // Posição para o início do primeiro caminho
+	//std::cout << "%i" << j; // Posição para o início do primeiro caminho
 	// a[i][j] = 2; // para ver um starting point
 	a[i][j] = 0; // para ir a caminho
 
-	CriaCaminho(a, i, j, 0, 0, 3, 3, false);
+	CriaCaminho(a, i, j, 0, 3, 3, false);
 }
 
 int CriaEMostra() { // Esta função vai criar 1 labirinto
-	int grelha[sized][sized];
-	srand(time(NULL));
+	int **grelha;
 	
+	grelha = (int**)calloc(sized * sized, sizeof(int*));
+
 	CriaLab(grelha);
 
 	// grelha[i][j] = 2;
