@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <audio/irrKlang.h>
 #include <time.h>
+#include "text_renderer.h"
 // settings
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;

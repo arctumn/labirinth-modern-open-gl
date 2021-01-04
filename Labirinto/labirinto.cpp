@@ -71,6 +71,9 @@ int main()
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
 	Shader cube("shaders/cube.vs", "shaders/cube.fs");
 	Model wall("objects/rock/wall.obj");
+
+	TextRenderer *texto = new TextRenderer(SCR_WIDTH, SCR_HEIGHT);
+	
 	//Model lantern("objects/Lantern/Old Lantern Model.obj");
 	
 	int amount = 0;
@@ -181,26 +184,26 @@ int main()
 	time_t end;
 	// render loop
 	bool apagar = false,atualizar = true;
+	double resultado = 0;
+	ostringstream stringEscrita;
 	start = time(NULL);
+	int fps = 0;
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
+		
+		
 		camera.Zoom = 50.0f;
 		// per-frame time logic
 		//std::cout << "Valor de x:" << camera.Position.x << " Valor de z: " << camera.Position.z << std::endl;
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		///cout << deltaTime << endl;
-		//if ((int)currentFrame % 3 == 0) isDark = !isDark;
 		
-
-		//cout << currentFrame << endl;
-		// input
 		processInput(window);
 		//if (!isDark) {
 			// render
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//}
 
@@ -233,14 +236,34 @@ int main()
 			end = time(NULL);
 			//cout << end-start << endl;
 			hideWorld(cube, (end - start) % 8 == 0);
+			produceExit(window, modelMatrices, wall, amount);
+			cube.use();
+			load_textures(wall, amount);
 		}
-		// Handles the wall objects
-		produceExit(window, modelMatrices, wall, amount);
-		load_textures(wall, amount);
+
+		texto->Load("fonts/ARIALNB.TTF", 24);
+		double currentTime = glfwGetTime();
+		nbFrames++;
+		if (currentTime - lastTime >= 1.0)
+		{
+			resultado = 1000.0 / double(nbFrames);
+			fps = nbFrames;
+			nbFrames = 0;
+			lastTime += 1.0;
+		}
 		
-		//load_textures(lantern, amount2);
-
-
+		stringEscrita << "Latency: " << resultado << " ms";
+		texto->RenderText(stringEscrita.str(), 25.0f, 25.0f, 0.5);
+		stringEscrita.str("");
+		stringEscrita << "Saida x: " << saida.first.first << " z: " << saida.first.second;
+		texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 50.0f, 1);
+		stringEscrita.str("");
+		stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
+		texto->RenderText(stringEscrita.str(), SCR_WIDTH-150.0f, 25.0f, 1);
+		stringEscrita.str("");
+		stringEscrita << "FPS: " << fps;
+		texto->RenderText(stringEscrita.str(), 25.0f, 50.0f, 0.5);
+		stringEscrita.str("");
 		//else hideWorld();
 		if (saida.second.second) {
 			cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
@@ -256,14 +279,7 @@ int main()
 		}
 		if (!collided) lastPos = camera.Position;
 		
-		double currentTime = glfwGetTime();
-		nbFrames++;
-		if (currentTime - lastTime >= 1.0) 
-		{
-			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
-			nbFrames = 0;
-			lastTime += 1.0;
-		}
+		
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
@@ -292,6 +308,7 @@ int main()
 
 
 void load_textures(Model curentobj, int amount) {
+	glEnable(GL_TEXTURE_2D);
 	for (unsigned int i = 0; i < curentobj.meshes.size(); i++)
 	{
 		glBindVertexArray(curentobj.meshes[i].VAO);
@@ -299,14 +316,13 @@ void load_textures(Model curentobj, int amount) {
 			GL_TRIANGLES, (GLsizei)curentobj.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount
 		);
 	}
+	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
-
-	
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {

@@ -1,21 +1,21 @@
 ﻿  labirinto.cpp
 c:\users\silve\source\repos\labirinth-modern-open-gl\opengllibraries\include\shader_m.h(56): warning C4101: 'e': unreferenced local variable
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\generatelab.h(325): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(191): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(232): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(436): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(199): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(235): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(452): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
           with
           [
               T=float
           ]
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(437): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(453): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
           with
           [
               T=float
           ]
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(525): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(541): warning C4305: 'argument': truncation from 'double' to 'float'
   Generating code
-  2 of 1076 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  11 of 1253 functions ( 0.9%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

@@ -21,12 +21,18 @@
     <ClCompile Include="labirinto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="text_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GenerateLab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="labirinto_code.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="text_renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
