@@ -1,4 +1,18 @@
-﻿  text_renderer.cpp
+﻿  labirinto.cpp
 c:\users\silve\source\repos\labirinth-modern-open-gl\opengllibraries\include\shader_m.h(56): warning C4101: 'e': unreferenced local variable
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\text_renderer.cpp(80): warning C4838: conversion from 'FT_Pos' to 'unsigned int' requires a narrowing conversion
-freetype.dll : fatal error LNK1107: invalid or corrupt file: cannot read at 0x358
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\generatelab.h(325): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(199): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(235): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(452): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(453): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(541): warning C4305: 'argument': truncation from 'double' to 'float'
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Labirinto.vcxproj -> C:\Users\silve\source\repos\labirinth-modern-open-gl\x64\Debug\Labirinto.exe

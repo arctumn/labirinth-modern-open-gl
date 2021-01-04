@@ -3,7 +3,7 @@
 #include <time.h>
 #include <chrono>
 #include <thread>
-#define sized 1000
+#define sized 250
 #define pd 5 // Probabilidade de manter a direção
 #define pb 4 // probabilidade de criar um branch
 #define GREEN     "\033[32m"      /* Red */

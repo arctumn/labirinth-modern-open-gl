@@ -28,6 +28,7 @@ TextRenderer::TextRenderer(unsigned int width, unsigned int height)
 
 void TextRenderer::Load(std::string font, unsigned int fontSize)
 {
+	glEnable(GL_CULL_FACE);
 	// first clear the previously loaded Characters
 	this->Characters.clear();
 	// then initialize and load the FreeType library
@@ -85,6 +86,9 @@ void TextRenderer::Load(std::string font, unsigned int fontSize)
 	// destroy FreeType once we're finished
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
+	glUseProgram(0);
+	glDisable(GL_TEXTURE0);
+
 }
 
 void TextRenderer::RenderText(std::string text, float x, float y, float scale, glm::vec3 color)
@@ -133,4 +137,7 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glUseProgram(0);
+	glDisable(GL_TEXTURE0);
+	glDisable(GL_BLEND);
 }

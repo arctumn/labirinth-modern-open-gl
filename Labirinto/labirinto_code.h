@@ -15,13 +15,14 @@
 #include <audio/irrKlang.h>
 #include <time.h>
 #include "text_renderer.h"
+
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 bool fullscreen = false;
 bool noclip = false;
 bool mapa = false;
-
+bool textEnabled = false;
 time_t start;
 
 

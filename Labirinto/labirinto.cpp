@@ -65,7 +65,7 @@ int main()
 		}
 	}
 	saida.first = EscolheSaida(matrix, camera); // Candidados para Saídas
-	std::cout << "\nValores da saida: " << saida.first.first << ", " << saida.first.second << "\n";
+	//std::cout << "\nValores da saida: " << saida.first.first << ", " << saida.first.second << "\n";
 	// build and compile our shader program
 	// ------------------------------------
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
@@ -189,6 +189,7 @@ int main()
 	start = time(NULL);
 	int fps = 0;
 	// -----------
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		
@@ -201,11 +202,9 @@ int main()
 		lastFrame = currentFrame;
 		
 		processInput(window);
-		//if (!isDark) {
-			// render
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//}
+
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -234,14 +233,18 @@ int main()
 			cube.setInt("texture_diffuse1", 0);
 			cube.setFloat("visibility", 0.3);
 			end = time(NULL);
-			//cout << end-start << endl;
+			
+			//Esconde o mundo do jogador
 			hideWorld(cube, (end - start) % 8 == 0);
+			
 			produceExit(window, modelMatrices, wall, amount);
 			cube.use();
 			load_textures(wall, amount);
 		}
 
-		texto->Load("fonts/ARIALNB.TTF", 24);
+		//else hideWorld();
+		if(textEnabled)
+			texto->Load("fonts/ARIALNB.TTF", 24);
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		if (currentTime - lastTime >= 1.0)
@@ -251,20 +254,23 @@ int main()
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
+		if (textEnabled) {
+			stringEscrita << "Latency: " << resultado << " ms";
+			texto->RenderText(stringEscrita.str(), 25.0f, 25.0f, 0.5);
+			stringEscrita.str("");
+			stringEscrita << "Exit x: " << saida.first.first << " z: " << saida.first.second;
+			texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 50.0f, 0.5);
+			stringEscrita.str("");
+			stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
+			texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 25.0f, 0.5);
+			stringEscrita.str("");
+			stringEscrita << "FPS: " << fps;
+			texto->RenderText(stringEscrita.str(), 25.0f, 50.0f, 0.5);
+			stringEscrita.str("");
+		}
+		else {}
 		
-		stringEscrita << "Latency: " << resultado << " ms";
-		texto->RenderText(stringEscrita.str(), 25.0f, 25.0f, 0.5);
-		stringEscrita.str("");
-		stringEscrita << "Saida x: " << saida.first.first << " z: " << saida.first.second;
-		texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 50.0f, 1);
-		stringEscrita.str("");
-		stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
-		texto->RenderText(stringEscrita.str(), SCR_WIDTH-150.0f, 25.0f, 1);
-		stringEscrita.str("");
-		stringEscrita << "FPS: " << fps;
-		texto->RenderText(stringEscrita.str(), 25.0f, 50.0f, 0.5);
-		stringEscrita.str("");
-		//else hideWorld();
+		
 		if (saida.second.second) {
 			cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
 		}
@@ -309,12 +315,14 @@ int main()
 
 void load_textures(Model curentobj, int amount) {
 	glEnable(GL_TEXTURE_2D);
-	for (unsigned int i = 0; i < curentobj.meshes.size(); i++)
+	for (unsigned int i = 0; i < curentobj.meshes.size();)
 	{
 		glBindVertexArray(curentobj.meshes[i].VAO);
+		//std::cout << "Objecto numero: " << i << endl;
 		glDrawElementsInstanced(
 			GL_TRIANGLES, (GLsizei)curentobj.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount
 		);
+		i++;
 	}
 	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
@@ -325,6 +333,11 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+		textEnabled = true;
+	}
+	//else { textEnabled = false; }
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
 			camera.MovementSpeed = 10.0f;
 			noclip = !noclip;
