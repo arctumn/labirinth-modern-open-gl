@@ -21,6 +21,7 @@ bool fullscreen = false;
 bool noclip = false;
 bool mapa = false;
 
+time_t start;
 
 
 

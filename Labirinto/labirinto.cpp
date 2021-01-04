@@ -7,8 +7,6 @@ ISoundEngine *SoundEngine = createIrrKlangDevice();
 int main()
 {
 
-	
-
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
@@ -180,7 +178,7 @@ int main()
 
 	int nbFrames = 0;
 	double lastTime = 0.0;
-	time_t start, end;
+	time_t end;
 	// render loop
 	bool apagar = false,atualizar = true;
 	start = time(NULL);
@@ -202,7 +200,7 @@ int main()
 		processInput(window);
 		//if (!isDark) {
 			// render
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//}
 
@@ -307,6 +305,8 @@ void load_textures(Model curentobj, int amount) {
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
+
+	
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
@@ -449,6 +449,7 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 	return matrices;
 
 }
+
 void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
 	// configure instanced array
 	// -------------------------
@@ -516,16 +517,14 @@ void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmou
 
 void hideWorld(Shader shadow, bool apagar) {
 	if (apagar) {
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		shadow.use();
 		shadow.setFloat("visibility", 0.0);
 	}
 	else {
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		shadow.use();
 		shadow.setFloat("visibility", 0.3);
 	}
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void showDistance(float x1, float z1, float x2, float z2) {
