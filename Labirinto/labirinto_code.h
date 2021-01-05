@@ -14,7 +14,7 @@
 #include <model.h>
 #include <iostream>
 #include "GenerateLab.h"
-#include <filesystem>
+//#include <filesystem>
 #include <audio/irrKlang.h>
 #include <time.h>
 #include "text_renderer.h"
@@ -24,15 +24,18 @@
 
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+static int sized = 100;
 bool fullscreen = false;
 bool noclip = false;
 bool mapa = false;
-bool textEnabled = false;
+bool textEnabled = true;
 time_t start;
 bool end_game = false;
 int FOV = 10;
+
+
 
 
 //Lab LIMITS
@@ -121,15 +124,20 @@ void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmou
 void hideWorld(Shader shadow,bool apagar);
 void showDistance(float x1, float z1, float x2, float z2);
 bool pointInside(float point_x, float point_z, float box_x, float box_z);
-void endGame(TextRenderer *texto);
+void endGame(TextRenderer *texto,bool fim_de_jogo);
 void guiaText(TextRenderer *texto, float resultado, float fps);
-void playMusic();
+void playMusicGame();
+void playEndMusic();
 float distancia(float x1, float z1, float x2, float z2);
 void setShaders(Shader shadow);
 void atribuir(unsigned int VBO, unsigned int lightVAO);
 
+void play_audio(const char* audio_name,bool loop=false);
 std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos, int *amount);
 
+using namespace irrklang;
+
+ISoundEngine *SoundEngine = createIrrKlangDevice();
 
 
 
@@ -156,9 +164,7 @@ void gameLoop
 
 
 
-using namespace irrklang;
 
-ISoundEngine *SoundEngine = createIrrKlangDevice();
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -167,9 +173,6 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-		textEnabled = true;
-	}
 	//else { textEnabled = false; }
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
 		camera.MovementSpeed = 15.0f;
@@ -179,8 +182,9 @@ void processInput(GLFWwindow *window)
 	if (noclip == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 5; }
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
 		camera.Position.y = 10;
+		mapa = !mapa;
 	}
-	else if (noclip == false) camera.Position.y = 0;
+	else if (noclip == false) camera.Position.y = 0;;
 	if (!end_game) {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 			camera.ProcessKeyboard(FORWARD, deltaTime);
@@ -366,7 +370,12 @@ void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmou
 
 }
 
-
+void scream() {
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::seconds(8));
+		play_audio("music/scream.wav", false);
+	}
+}
 void gameLoop
 (
 	GLFWwindow * window,
@@ -387,6 +396,13 @@ void gameLoop
 	bool collided
 )
 {
+	TextRenderer texto2 = *texto;
+	texto2.Load("fonts/ARIALNB.TTF", 50);
+	
+	std::thread music(playMusicGame);
+	std::thread scream_audio(scream);
+	scream_audio.detach();
+	bool fim_de_jogo = false;
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -409,13 +425,14 @@ void gameLoop
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 
+		if(mapa == true)
 		{
 			lampShader.use();
 			lampShader.setMat4("projection", projection);
 			lampShader.setMat4("view", view);
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, lightPos);
-			model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+			model = glm::scale(model, glm::vec3(0.2f));
 			lampShader.setMat4("model", model);
 			glBindVertexArray(lightVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -441,9 +458,10 @@ void gameLoop
 				//Esconde o mundo do jogador
 				hideWorld(cube, (end - start) % 8 == 0);
 			}
+			//play_audio("music/scream.wav");
 		}
-
-		endGame(texto);
+		
+		endGame(&texto2,fim_de_jogo);
 
 		double currentTime = glfwGetTime();
 		nbFrames++;
@@ -473,13 +491,19 @@ void gameLoop
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-	}
-}
 
+	}
+	music.join();
+	//scream_audio.join();
+}
+void play_audio(const char* audio_name, bool loop) {
+			SoundEngine->play2D(audio_name,loop);
+}
 void hideWorld(Shader shadow, bool apagar) {
-	if (apagar) {
+	if (apagar && noclip == false) {
 		shadow.use();
 		shadow.setFloat("visibility", 0.0);
+		//start_scream();
 	}
 	else {
 		shadow.use();
@@ -501,14 +525,22 @@ bool pointInside(float point_x, float point_z, float box_x, float box_z) {
 	return false;
 }
 
-void playMusic() {
-	SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3", true);
+void playMusicGame() {
+	//SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3", true);
+	SoundEngine->play2D("./music/ambient.mp3", true);
 }
-void endGame(TextRenderer *texto) {
+void playEndMusic() {
+	SoundEngine->stopAllSounds();
+	//SoundEngine->play2D(,true)
+
+
+	//cout << "ola" << endl;
+}
+void endGame(TextRenderer *texto,bool fim_de_jogo) {
 	if ((int)camera.Position.x < 0 || (int)camera.Position.z < 0)
 	{
 		srand(time(NULL));
-		texto->Load("fonts/ARIALNB.TTF", 50);
+		
 		float colors_red = (rand() % 100) / 100.0f;
 		float colors_green = (rand() % 100) / 100.0f;
 		float colors_blue = (rand() % 100) / 100.0f;
@@ -522,6 +554,12 @@ void endGame(TextRenderer *texto) {
 		}
 		end_game = true;
 		noclip = true;
+		
+		if (fim_de_jogo == false) {
+			playEndMusic();
+			fim_de_jogo == true;
+		}
+		
 	}
 }
 void guiaText(TextRenderer *texto, float resultado, float fps) {

@@ -50,7 +50,7 @@ int main()
 
 	matrix = new int* [sized];
 	for (int i = 0; i < sized; i++) matrix[i] = new int[sized];
-	CriaLab(matrix);
+	CriaLab(matrix,sized);
 	while (true) {
 		int i = rand() % sized;
 		int j = rand() % sized;
@@ -62,7 +62,7 @@ int main()
 			break; 
 		}
 	}
-	saida.first = EscolheSaida(matrix, camera); // Candidados para Saídas
+	saida.first = EscolheSaida(matrix, camera,sized); // Candidados para Saídas
 	
 	// build and compile our shader program
 	// ------------------------------------
@@ -102,8 +102,7 @@ int main()
 	float movementSpeed = camera.MovementSpeed;
 	bool collided = false;
 
-	std::thread music_player(playMusic);
-
+	
 	int nbFrames = 0;
 	double lastTime = 0.0;
 //	time_t end;
@@ -132,7 +131,7 @@ int main()
 	}
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
-	music_player.join();
+	
 	glfwTerminate();
 	return 0;
 }
