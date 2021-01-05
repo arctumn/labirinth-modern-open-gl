@@ -1,9 +1,12 @@
+#ifndef __GENERATE_LAB_H__
+#define __GENERATE_LAB_H__
+#endif
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
 #include <chrono>
 #include <thread>
-#define sized 55
+#define sized 150
 #define pd 5 // Probabilidade de manter a direção
 #define pb 4 // probabilidade de criar um branch
 #define GREEN     "\033[32m"      /* Red */

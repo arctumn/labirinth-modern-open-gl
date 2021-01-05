@@ -144,7 +144,7 @@ void TextRenderer::RenderText(std::string text, float x, float y, float scale, g
 
 void TextRenderer::WriteText(std::ostringstream *text, float x, float y, float scale, glm::vec3 color) {
 	RenderText(text->str(),x,y,scale,color);
-	std::ostringstream empty;
+	//std::ostringstream empty;
 	text->str("");
 }
 

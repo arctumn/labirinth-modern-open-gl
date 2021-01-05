@@ -169,6 +169,7 @@ irrKlang.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
   <ItemGroup>
     <ClCompile Include="labirinto.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="labirinto_code.cpp" />
     <ClCompile Include="text_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
