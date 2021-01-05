@@ -25,7 +25,7 @@ bool mapa = false;
 bool textEnabled = false;
 time_t start;
 bool end_game = false;
-int FOV = 5;
+int FOV = 10;
 
 
 //Lab LIMITS
