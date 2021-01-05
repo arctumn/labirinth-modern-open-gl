@@ -24,7 +24,8 @@ bool noclip = false;
 bool mapa = false;
 bool textEnabled = false;
 time_t start;
-
+bool end_game = false;
+int FOV = 5;
 
 
 //Lab LIMITS
@@ -53,27 +54,24 @@ float lastFrame = 0.0f;
 //Pos Matrix
 
 int** matrix;
-//float matrixF[siz * 5][30 * 5];
+
 
 // lighting
 glm::vec3 lightPos;
 glm::vec3 startPosCamera;
 
 
-bool firstClick = true;
-pair <float, float> pos1;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 glm::mat4 * load(Model obj, int *amount, float scale, glm::mat4 * matrices);
-glm::mat4 *load_single(Model obj, int *getAmount, float scale, glm::mat4 *matrices, glm::vec3 Position);
-void load_textures(Model obj, int amount);
-void writeToPos(glm::mat4 *matrices, Model obj, int getAmount);
 void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount);
 void hideWorld(Shader shadow,bool apagar);
 void showDistance(float x1, float z1, float x2, float z2);
 bool pointInside(float point_x, float point_z, float box_x, float box_z);
-
+void endGame(TextRenderer *texto);
+void guiaText(TextRenderer *texto, float resultado, float fps);
 void playMusic();
+float distancia(float x1, float z1, float x2, float z2);

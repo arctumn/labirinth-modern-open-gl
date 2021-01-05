@@ -65,7 +65,7 @@ int main()
 		}
 	}
 	saida.first = EscolheSaida(matrix, camera); // Candidados para Saídas
-	//std::cout << "\nValores da saida: " << saida.first.first << ", " << saida.first.second << "\n";
+	
 	// build and compile our shader program
 	// ------------------------------------
 	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
@@ -74,14 +74,11 @@ int main()
 
 	TextRenderer *texto = new TextRenderer(SCR_WIDTH, SCR_HEIGHT);
 	
-	//Model lantern("objects/Lantern/Old Lantern Model.obj");
-	
 	int amount = 0;
-	//int amount2 = 0;
+
 	glm::mat4 *modelMatrices = NULL;
 	modelMatrices = load(wall, &amount, 0.5f, modelMatrices);
-	//glm::mat4 *modelMatricesLantern = NULL;
-	//modelMatricesLantern = load_single(lantern, &amount2, 0.1f, modelMatricesLantern, camera.Position);
+	std::ostringstream in;
 	
 	const int value = amount;
 	pair<float, float> *cubePos = (pair<float, float> *)calloc(amount,sizeof(pair<float,float>));
@@ -175,36 +172,41 @@ int main()
 	float movementSpeed = camera.MovementSpeed;
 	bool collided = false;
 
-
-
 	std::thread music_player(playMusic);
 
 	int nbFrames = 0;
 	double lastTime = 0.0;
 	time_t end;
-	// render loop
+
 	bool apagar = false,atualizar = true;
 	double resultado = 0;
 	ostringstream stringEscrita;
 	start = time(NULL);
 	int fps = 0;
-	// -----------
 	
+	cube.use();
+	cube.setInt("material.diffuse", 0);
+	cube.setInt("material.specular", 1);
+
+
 	while (!glfwWindowShouldClose(window))
 	{
-		
+	
 		
 		camera.Zoom = 50.0f;
 		// per-frame time logic
-		//std::cout << "Valor de x:" << camera.Position.x << " Valor de z: " << camera.Position.z << std::endl;
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		
 		processInput(window);
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(.0f, .0f, .0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glm::vec3 pointLightColors[] = 
+		{
+			glm::vec3(0.1f, 0.1f, 0.1f),
+		};
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -212,7 +214,6 @@ int main()
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 
-		//Draws the first lamp
 		{
 			lampShader.use();
 			lampShader.setMat4("projection", projection);
@@ -225,55 +226,80 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		
+		
+
 		{
-			cube.use();
-			cube.setMat4("projection", projection);
-			cube.setMat4("view", view);
-			cube.use();
-			cube.setInt("texture_diffuse1", 0);
-			cube.setFloat("visibility", 0.3);
-			end = time(NULL);
-			
-			//Esconde o mundo do jogador
-			hideWorld(cube, (end - start) % 8 == 0);
-			
-			produceExit(window, modelMatrices, wall, amount);
-			cube.use();
-			load_textures(wall, amount);
+				cube.use();
+				cube.setVec3("viewPos", camera.Position);
+				cube.setFloat("material.shininess", 32.0f);
+				//cube.use();
+				glUniform3f(glGetUniformLocation(cube.ID, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
+				glUniform3f(glGetUniformLocation(cube.ID, "dirLight.ambient"), 0.0f, 0.0f, 0.0f);
+				glUniform3f(glGetUniformLocation(cube.ID, "dirLight.diffuse"), 0.05f, 0.05f, 0.05);
+				glUniform3f(glGetUniformLocation(cube.ID, "dirLight.specular"), 0.2f, 0.2f, 0.2f);
+				// Point light 1
+				glUniform3f(glGetUniformLocation(cube.ID, "pointLights[0].position"), camera.Position.x, camera.Position.y+1, camera.Position.z);
+				glUniform3f(glGetUniformLocation(cube.ID, "pointLights[0].ambient"), pointLightColors[0].x * 0.1, pointLightColors[0].y * 0.1, pointLightColors[0].z * 0.1);
+				glUniform3f(glGetUniformLocation(cube.ID, "pointLights[0].diffuse"), pointLightColors[0].x, pointLightColors[0].y, pointLightColors[0].z);
+				glUniform3f(glGetUniformLocation(cube.ID, "pointLights[0].specular"), pointLightColors[0].x, pointLightColors[0].y, pointLightColors[0].z);
+				glUniform1f(glGetUniformLocation(cube.ID, "pointLights[0].constant"), 1.0f);
+				glUniform1f(glGetUniformLocation(cube.ID, "pointLights[0].linear"), 0.14);
+				glUniform1f(glGetUniformLocation(cube.ID, "pointLights[0].quadratic"), 0.07);
+
+				// SpotLight
+				glUniform3f(glGetUniformLocation(cube.ID, "spotLight.position"), camera.Position.x, camera.Position.y, camera.Position.z);
+				glUniform3f(glGetUniformLocation(cube.ID, "spotLight.direction"), camera.Front.x, camera.Front.y, camera.Front.z);
+				glUniform3f(glGetUniformLocation(cube.ID, "spotLight.ambient"), 0.0f, 0.0f, 0.0f);
+				glUniform3f(glGetUniformLocation(cube.ID, "spotLight.diffuse"), 1.0f, 1.0f, 1.0f);
+				glUniform3f(glGetUniformLocation(cube.ID, "spotLight.specular"), 1.0f, 1.0f, 1.0f);
+				glUniform1f(glGetUniformLocation(cube.ID, "spotLight.constant"), 1.0f);
+				glUniform1f(glGetUniformLocation(cube.ID, "spotLight.linear"), 0.09);
+				glUniform1f(glGetUniformLocation(cube.ID, "spotLight.quadratic"), 0.032);
+				glUniform1f(glGetUniformLocation(cube.ID, "spotLight.cutOff"), glm::cos(glm::radians(10.0f)));
+				glUniform1f(glGetUniformLocation(cube.ID, "spotLight.outerCutOff"), glm::cos(glm::radians(15.0f)));
+
+
+
+				cube.setMat4("projection", projection);
+				cube.setMat4("view", view);
+				//cube.use();
+				//cube.setInt("texture_diffuse1", 0);
+				//cube.setFloat("visibility", 0.3);
+				
+				cube.use();
+				for (int i = 0; i < amount; i++) {
+				cube.setMat4("model", modelMatrices[i]);
+				end = time(NULL);
+				cube.use();
+
+				produceExit(window, modelMatrices, wall, amount);
+				if(distancia(cubePos[i].first,cubePos[i].second,camera.Position.x,camera.Position.z) < FOV)
+					wall.Draw(cube);
+				//Esconde o mundo do jogador
+				hideWorld(cube, (end - start) % 8 == 0);
+			}
 		}
 
-		//else hideWorld();
-		if(textEnabled)
+		endGame(texto);
+
+
+		if (textEnabled)
+		{
 			texto->Load("fonts/ARIALNB.TTF", 24);
+			
+		}
 		double currentTime = glfwGetTime();
 		nbFrames++;
-		if (currentTime - lastTime >= 1.0)
-		{
+		if (currentTime - lastTime >= 1.0){
 			resultado = 1000.0 / double(nbFrames);
 			fps = nbFrames;
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
-		if (textEnabled) {
-			stringEscrita << "Latency: " << resultado << " ms";
-			texto->RenderText(stringEscrita.str(), 25.0f, 25.0f, 0.5);
-			stringEscrita.str("");
-			stringEscrita << "Exit x: " << saida.first.first << " z: " << saida.first.second;
-			texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 50.0f, 0.5);
-			stringEscrita.str("");
-			stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
-			texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 25.0f, 0.5);
-			stringEscrita.str("");
-			stringEscrita << "FPS: " << fps;
-			texto->RenderText(stringEscrita.str(), 25.0f, 50.0f, 0.5);
-			stringEscrita.str("");
-		}
-		else {}
-		
-		
-		if (saida.second.second) {
-			cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
-		}
+		guiaText(texto, resultado, fps);
+	
+		if (saida.second.second) cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
+
 		if (!noclip) {
 			for (int i = 0; i < amount; i++)
 				if (pointInside(camera.Position.x, camera.Position.z, cubePos[i].first, cubePos[i].second)) {
@@ -290,8 +316,6 @@ int main()
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
-		 //hideWorld();
 	}
 
 	// optional: de-allocate all resources once they've outlived their purpose:
@@ -300,8 +324,7 @@ int main()
 	//glDeleteVertexArrays(1, &lightVAO2);
 	glDeleteBuffers(1, &VBO);
 	std::free(cubePos);
-	for (size_t i = 0; i < sized; i++)
-	{
+	for (size_t i = 0; i < sized; i++){
 		std::free(matrix[i]);
 	}
 	// glfw: terminate, clearing all previously allocated GLFW resources.
@@ -312,20 +335,6 @@ int main()
 }
 
 
-
-void load_textures(Model curentobj, int amount) {
-	glEnable(GL_TEXTURE_2D);
-	for (unsigned int i = 0; i < curentobj.meshes.size();)
-	{
-		glBindVertexArray(curentobj.meshes[i].VAO);
-		//std::cout << "Objecto numero: " << i << endl;
-		glDrawElementsInstanced(
-			GL_TRIANGLES, (GLsizei)curentobj.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount
-		);
-		i++;
-	}
-	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
-}
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -339,46 +348,48 @@ void processInput(GLFWwindow *window)
 	}
 	//else { textEnabled = false; }
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
-			camera.MovementSpeed = 10.0f;
+			camera.MovementSpeed = 15.0f;
 			noclip = !noclip;
+			FOV = 20;
 	}
-	if (noclip == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; }
+	if (noclip == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 5; }
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
 		camera.Position.y = 10;
 	}
-	else camera.Position.y = 0;
-	
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-		lightPos.x = camera.Position.x;
-		lightPos.y = 1;
-		lightPos.z = camera.Position.z;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-		lightPos.x = camera.Position.x;
-		lightPos.y = 1;
-		lightPos.z = camera.Position.z;
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera.ProcessKeyboard(LEFT, deltaTime);
-		lightPos.x = camera.Position.x;
-		lightPos.y = 1;
-		lightPos.z = camera.Position.z;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-		lightPos.x = camera.Position.x;
-		lightPos.y = 1;
-		lightPos.z = camera.Position.z;
-	}
-	if (glfwGetKey(window,GLFW_KEY_F11) == GLFW_PRESS) {
+	else if (noclip == false) camera.Position.y = 0;
+	if (!end_game) {
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+			camera.ProcessKeyboard(FORWARD, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+			camera.ProcessKeyboard(BACKWARD, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+			camera.ProcessKeyboard(LEFT, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			camera.ProcessKeyboard(RIGHT, deltaTime);
+			lightPos.x = camera.Position.x;
+			lightPos.y = 1;
+			lightPos.z = camera.Position.z;
+		}
+		if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS) {
 
-		// Toggle fullscreen flag.
-		fullscreen = !fullscreen;
+			// Toggle fullscreen flag.
+			fullscreen = !fullscreen;
 
-		glfwSetWindowMonitor(window, fullscreen ? glfwGetPrimaryMonitor() : NULL, 0, 0, SCR_WIDTH, SCR_HEIGHT, GLFW_DONT_CARE);
+			glfwSetWindowMonitor(window, fullscreen ? glfwGetPrimaryMonitor() : NULL, 0, 0, SCR_WIDTH, SCR_HEIGHT, GLFW_DONT_CARE);
 
+		}
 	}
 }
 
@@ -473,60 +484,13 @@ glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
 			a++;
 		}
 
-	writeToPos(matrices, obj, amount);
+	//writeToPos(matrices, obj, amount);
 
 	return matrices;
 
 }
 
-void writeToPos(glm::mat4 *matrices, Model obj, int getAmount) {
-	// configure instanced array
-	// -------------------------
-	unsigned int buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, getAmount * sizeof(glm::mat4), &matrices[0], GL_STATIC_DRAW);
 
-
-	// set transformation matrices as an instance vertex attribute (with divisor 1)
-	// note: we're cheating a little by taking the, now publicly declared, VAO of the model's mesh(es) and adding new vertexAttribPointers
-	// normally you'd want to do this in a more organized fashion, but for learning purposes this will do.
-	// -----------------------------------------------------------------------------------------------------------------------------------
-
-	for (unsigned int i = 0; i < obj.meshes.size(); i++)
-	{
-		unsigned int VAO = obj.meshes[i].VAO;
-		glBindVertexArray(VAO);
-		// set attribute pointers for matrix (4 times vec4)
-		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-		glEnableVertexAttribArray(5);
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
-
-		glVertexAttribDivisor(3, 1);
-		glVertexAttribDivisor(4, 1);
-		glVertexAttribDivisor(5, 1);
-		glVertexAttribDivisor(6, 1);
-
-		glBindVertexArray(0);
-	}
-
-}
-
-glm::mat4 *load_single(Model obj, int *getAmount, float scale, glm::mat4 *matrices,glm::vec3 Position) 
-{
-	*getAmount = 1;
-	matrices = new glm::mat4[1];
-	matrices[0] = glm::scale(glm::translate(glm::mat4(1.0f), Position), glm::vec3(scale));
-
-	writeToPos(matrices, obj, 1);
-
-	return matrices;
-}
 
 void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmount) {
 	if(saida.second.second)
@@ -536,7 +500,7 @@ void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmou
 	if (distancia < (float) sized/3){
 		std::cout << "\nDistancia: " << distancia << "\n";
 		matrices[saida.second.first] = glm::translate(matrices[saida.second.first], glm::vec3(666, 0, 0));
-		writeToPos(matrices, obj, getAmount);
+		//writeToPos(matrices, obj, getAmount);
 			saida.second.second = true;
 
 	}
@@ -571,4 +535,44 @@ bool pointInside(float point_x, float point_z, float box_x, float box_z) {
 
 void playMusic() {
 	SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3",true);
+}
+void endGame(TextRenderer *texto) {
+	if ((int)camera.Position.x < 0 || (int)camera.Position.z < 0)
+	{
+		srand(time(NULL));
+		texto->Load("fonts/ARIALNB.TTF", 50);
+		float colors_red = (rand() % 100) / 100.0f;
+		float colors_green = (rand() % 100) / 100.0f;
+		float colors_blue = (rand() % 100) / 100.0f;
+
+		//std::cout << "r: " << colors_red << " g:" << colors_green << " b:" << colors_blue << endl;;
+		texto->RenderText("THE END!", SCR_WIDTH / 2, SCR_HEIGHT / 2, 1, glm::vec3(colors_red, colors_green, colors_blue));
+		if (noclip == false)
+			camera.MovementSpeed = 0.f;
+		else {
+			camera.MovementSpeed = 10.f;
+		}
+		end_game = true;
+		noclip = true;
+	}
+}
+void guiaText(TextRenderer *texto,float resultado, float fps) {
+	if (textEnabled) {
+		ostringstream stringEscrita;
+		stringEscrita << "Latency: " << resultado << " ms";
+		texto->RenderText(stringEscrita.str(), 25.0f, 25.0f, 0.5);
+		stringEscrita.str("");
+		stringEscrita << "Exit x: " << saida.first.first << " z: " << saida.first.second;
+		texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 50.0f, 0.5);
+		stringEscrita.str("");
+		stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
+		texto->RenderText(stringEscrita.str(), SCR_WIDTH - 150.0f, 25.0f, 0.5);
+		stringEscrita.str("");
+		stringEscrita << "FPS: " << fps;
+		texto->RenderText(stringEscrita.str(), 25.0f, 50.0f, 0.5);
+		stringEscrita.str("");
+	}
+}
+float distancia(float x1, float z1, float x2, float z2) {
+	return sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f));
 }

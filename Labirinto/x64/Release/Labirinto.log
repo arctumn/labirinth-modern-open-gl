@@ -1,21 +1,29 @@
 ﻿  labirinto.cpp
 c:\users\silve\source\repos\labirinth-modern-open-gl\opengllibraries\include\shader_m.h(56): warning C4101: 'e': unreferenced local variable
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\generatelab.h(325): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(200): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(234): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(465): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(198): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(238): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(242): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(246): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(247): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(256): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(257): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(299): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(299): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(476): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
           with
           [
               T=float
           ]
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(466): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(477): warning C4244: '=': conversion from 'unsigned int' to 'T', possible loss of data
           with
           [
               T=float
           ]
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(554): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(518): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto.cpp(542): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   Generating code
-  3 of 1253 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  1 of 1264 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
