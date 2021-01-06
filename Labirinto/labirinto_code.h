@@ -33,7 +33,7 @@ bool mapa = false;
 bool textEnabled = true;
 time_t start;
 bool end_game = false;
-int FOV = 10;
+int FOV = 20;
 
 
 
@@ -173,18 +173,10 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	//else { textEnabled = false; }
-	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
-		camera.MovementSpeed = 15.0f;
-		noclip = !noclip;
-		FOV = 20;
+	if (noclip == false && mapa == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 20; }
+	else if (!noclip && mapa) {
+		camera.MovementSpeed = 0;
 	}
-	if (noclip == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 5; }
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
-		camera.Position.y = 10;
-		mapa = !mapa;
-	}
-	else if (noclip == false) camera.Position.y = 0;;
 	if (!end_game) {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 			camera.ProcessKeyboard(FORWARD, deltaTime);
@@ -352,7 +344,7 @@ void setShaders(Shader shadow) {
 	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.linear"), 0.09);
 	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.quadratic"), 0.032);
 	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.cutOff"), glm::cos(glm::radians(10.0f)));
-	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.outerCutOff"), glm::cos(glm::radians(15.0f)));
+	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.outerCutOff"), glm::cos(glm::radians(25.0f)));
 }
 
 void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmount) {
@@ -372,10 +364,31 @@ void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmou
 
 void scream() {
 	while (true) {
-		std::this_thread::sleep_for(std::chrono::seconds(8));
+		std::this_thread::sleep_for(std::chrono::seconds(120));
 		play_audio("music/scream.wav", false);
 	}
 }
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_N && action == GLFW_PRESS) {
+		camera.MovementSpeed = 15.0f;
+		noclip = !noclip;
+		FOV = 50;
+	}
+		
+	if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+		camera.Position.y = 10;
+		mapa = !mapa;
+	}
+
+
+
+		
+	
+
+}
+
 void gameLoop
 (
 	GLFWwindow * window,
@@ -403,6 +416,8 @@ void gameLoop
 	std::thread scream_audio(scream);
 	scream_audio.detach();
 	bool fim_de_jogo = false;
+
+	glfwSetKeyCallback(window, key_callback);
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -456,7 +471,7 @@ void gameLoop
 				if (distancia(cubePos[i].first, cubePos[i].second, camera.Position.x, camera.Position.z) < FOV)
 					wall.Draw(cube);
 				//Esconde o mundo do jogador
-				hideWorld(cube, (end - start) % 8 == 0);
+				hideWorld(cube, (end - start) % 120 == 0);
 			}
 			//play_audio("music/scream.wav");
 		}
