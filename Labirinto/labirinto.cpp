@@ -66,7 +66,7 @@ int main()
 	
 	// build and compile our shader program
 	// ------------------------------------
-	Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
+	//Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
 	Shader cube("shaders/cube.vs", "shaders/cube.fs");
 	Model wall("objects/rock/wall.obj");
 
@@ -85,13 +85,6 @@ int main()
 
 
 
-	// set up vertex data (and buffer(s)) and configure vertex attributes
-	// ------------------------------------------------------------------
-	// first, configure the cube's VAO (and VBO)
-	unsigned int VBO = 0;
-	unsigned int lightVAO = 0;
-	
-	atribuir(VBO, lightVAO);
 
 	bool firstTime = true;
 	float lastXthis = 0;
@@ -118,13 +111,10 @@ int main()
 	cube.setInt("material.specular", 1);
 	texto->Load("fonts/ARIALNB.TTF", 24);
 
-	gameLoop(window,lampShader,VBO,lightVAO,cube,amount,modelMatrices,wall,cubePos,texto,nbFrames,lastTime,fps,resultado,lastPos,collided);
+	gameLoop(window,cube,amount,modelMatrices,wall,cubePos,texto,nbFrames,lastTime,fps,resultado,lastPos,collided);
 
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &lightVAO);
-	//glDeleteVertexArrays(1, &lightVAO2);
-	glDeleteBuffers(1, &VBO);
 	//std::free(cubePos);
 	for (size_t i = 0; i < sized; i++){
 		std::free(matrix[i]);

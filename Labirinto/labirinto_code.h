@@ -70,49 +70,7 @@ int** matrix;
 glm::vec3 lightPos;
 glm::vec3 startPosCamera;
 
-const float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-};
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -130,7 +88,7 @@ void playMusicGame();
 void playEndMusic();
 float distancia(float x1, float z1, float x2, float z2);
 void setShaders(Shader shadow);
-void atribuir(unsigned int VBO, unsigned int lightVAO);
+
 
 void play_audio(const char* audio_name,bool loop=false);
 std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos, int *amount);
@@ -145,9 +103,6 @@ ISoundEngine *SoundEngine = createIrrKlangDevice();
 void gameLoop
 (
 	GLFWwindow * window,
-	Shader lampShader,
-	unsigned int VAO,
-	unsigned int lightVAO,
 	Shader cube,
 	int amount,
 	glm::mat4 * modelMatrices,
@@ -172,7 +127,7 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
+	//configura o estado para remover a abilidade de voar A.K.A. y != 0
 	if (noclip == false && mapa == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 20; }
 	else if (!noclip && mapa) {
 		camera.MovementSpeed = 0;
@@ -346,7 +301,7 @@ void setShaders(Shader shadow) {
 	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.cutOff"), glm::cos(glm::radians(10.0f)));
 	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.outerCutOff"), glm::cos(glm::radians(25.0f)));
 }
-
+//O utilizador chegou ao fim
 void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmount) {
 	if (saida.second.second)
 		return;
@@ -361,40 +316,37 @@ void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmou
 	}
 
 }
-
+// causa um grito
 void scream() {
 	while (true) {
 		std::this_thread::sleep_for(std::chrono::seconds(120));
 		play_audio("music/scream.wav", false);
 	}
 }
-
+//Permite com que teclas sejam cuidadas apenas uma vez
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+{	//noclip
 	if (key == GLFW_KEY_N && action == GLFW_PRESS) {
 		camera.MovementSpeed = 15.0f;
 		noclip = !noclip;
 		FOV = 50;
 	}
-		
+	//mapa
 	if (key == GLFW_KEY_M && action == GLFW_PRESS) {
 		camera.Position.y = 10;
 		mapa = !mapa;
 	}
 
-
+	//Outros necessarios
 
 		
 	
 
 }
-
+//corre o jogo
 void gameLoop
 (
 	GLFWwindow * window,
-	Shader lampShader,
-	unsigned int VAO,
-	unsigned int lightVAO,
 	Shader cube,
 	int amount,
 	glm::mat4 * modelMatrices,
@@ -440,21 +392,7 @@ void gameLoop
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
 
-		if(mapa == true)
-		{
-			lampShader.use();
-			lampShader.setMat4("projection", projection);
-			lampShader.setMat4("view", view);
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, lightPos);
-			model = glm::scale(model, glm::vec3(0.2f));
-			lampShader.setMat4("model", model);
-			glBindVertexArray(lightVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-
-
+		//Shaders do labirinto
 		{
 			setShaders(cube);
 			cube.use();
@@ -475,9 +413,10 @@ void gameLoop
 			}
 			//play_audio("music/scream.wav");
 		}
-		
+		//Ativa o fim do jogo
 		endGame(&texto2,fim_de_jogo);
-
+		
+		//informação auxiliar FPS e latency
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		if (currentTime - lastTime >= 1.0) {
@@ -486,10 +425,11 @@ void gameLoop
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
+		//Mostra informação auxiliar
 		guiaText(texto, resultado, fps);
 
 		if (saida.second.second) cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
-
+		//Habilita a deteção e o comportamento da colisão entre objetos 
 		if (!noclip) {
 			for (int i = 0; i < amount; i++)
 				if (pointInside(camera.Position.x, camera.Position.z, cubePos[i].first, cubePos[i].second)) {
@@ -508,12 +448,14 @@ void gameLoop
 		glfwPollEvents();
 
 	}
+	//Pede ao sistema que espere pela thread de musica
 	music.join();
 	//scream_audio.join();
 }
 void play_audio(const char* audio_name, bool loop) {
 			SoundEngine->play2D(audio_name,loop);
 }
+//Esconde o mundo por alguns instantes
 void hideWorld(Shader shadow, bool apagar) {
 	if (apagar && noclip == false) {
 		shadow.use();
@@ -527,30 +469,27 @@ void hideWorld(Shader shadow, bool apagar) {
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void showDistance(float x1, float z1, float x2, float z2) {
-	cout << "Distance = " << sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f)) << endl;
-}
 
-
-
+// Sistema AABB, para colisão entre dois objetos, considerando que o corpo que se mova não veja o interior
 bool pointInside(float point_x, float point_z, float box_x, float box_z) {
 	if (point_x >= box_x - 0.2f && point_x <= box_x + UNIT_SIZE + 0.2f)
 		if (point_z >= box_z - 0.2f && point_z <= box_z + UNIT_SIZE + 0.2f)
 			return true;
 	return false;
 }
-
+//Musica de fundo do jogo
 void playMusicGame() {
 	//SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3", true);
 	SoundEngine->play2D("./music/ambient.mp3", true);
 }
+// Não foi escolhida a musica ai no fim do jogo
 void playEndMusic() {
 	SoundEngine->stopAllSounds();
 	//SoundEngine->play2D(,true)
 
-
-	//cout << "ola" << endl;
 }
+
+
 void endGame(TextRenderer *texto,bool fim_de_jogo) {
 	if ((int)camera.Position.x < 0 || (int)camera.Position.z < 0)
 	{
@@ -560,7 +499,7 @@ void endGame(TextRenderer *texto,bool fim_de_jogo) {
 		float colors_green = (rand() % 100) / 100.0f;
 		float colors_blue = (rand() % 100) / 100.0f;
 
-		//std::cout << "r: " << colors_red << " g:" << colors_green << " b:" << colors_blue << endl;;
+		//Mostra no meio do ecrã uma mensagem de cores diferentes
 		texto->RenderText("THE END!", SCR_WIDTH / 2, SCR_HEIGHT / 2, 1, glm::vec3(colors_red, colors_green, colors_blue));
 		if (noclip == false)
 			camera.MovementSpeed = 0.f;
@@ -597,23 +536,6 @@ void guiaText(TextRenderer *texto, float resultado, float fps) {
 }
 float distancia(float x1, float z1, float x2, float z2) {
 	return sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f));
-}
-
-void atribuir(unsigned int VBO, unsigned int lightVAO) {
-		glGenBuffers(1, &VBO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		// lightsource 1
-
-		glGenVertexArrays(1, &lightVAO);
-		glBindVertexArray(lightVAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
 }
 
 
