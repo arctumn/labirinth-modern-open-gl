@@ -55,8 +55,8 @@ int main()
 		int i = rand() % sized;
 		int j = rand() % sized;
 		if (!matrix[i][j]) {
-			camera.Position = glm::vec3(i + rand() % 100 / 100, 0, j + rand() % 100 / 100);
-			startPosCamera = camera.Position;
+			startPosCamera = glm::vec3(i + rand() % 100 / 100, 0, j + rand() % 100 / 100);
+			//startPosCamera = camera.Position;
 			lightPos = camera.Position;
 			lightPos.y = 1;
 			break; 
@@ -69,7 +69,6 @@ int main()
 	//Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
 	Shader cube("shaders/cube.vs", "shaders/cube.fs");
 	Model wall("objects/rock/wall.obj");
-
 	TextRenderer *texto = new TextRenderer(SCR_WIDTH, SCR_HEIGHT);
 	
 	int amount = 0;
