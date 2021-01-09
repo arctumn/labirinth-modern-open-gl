@@ -25,9 +25,8 @@ c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(743): warning C4018: '<': signed/unsigned mismatch
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(744): warning C4018: '<': signed/unsigned mismatch
   Generating code
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(650): warning C4715: 'gameLoop': not all control paths return a value
-  11 of 1397 functions ( 0.8%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    10 functions had inline decision re-evaluated but remain unchanged
+  1 of 1397 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Labirinto.vcxproj -> C:\Users\silve\source\repos\labirinth-modern-open-gl\x64\Release\Labirinto.exe
