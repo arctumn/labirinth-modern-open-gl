@@ -33,7 +33,7 @@ bool textEnabled = true;
 time_t start;
 bool end_game = false;
 int FOV = 20;
-float volume = 0.5F;
+float volume = 0.1F;
 bool muted = false;
 bool settings = false;
 bool inicio_jogo = true;
@@ -81,8 +81,8 @@ void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmou
 void hideWorld(Shader shadow,bool apagar);
 
 bool pointInside(float point_x, float point_z, float box_x, float box_z);
-void endGame(TextRenderer *texto,bool fim_de_jogo);
-void guiaText(TextRenderer *texto, float resultado, float fps);
+time_t endGame(TextRenderer *texto,bool * fim_de_jogo, time_t tempo_final);
+void guiaText(TextRenderer *texto, float resultado, float fps, bool fim_de_jogo, time_t tempo_final);
 void playMusicGame();
 void playEndMusic();
 float distancia(float x1, float z1, float x2, float z2);
@@ -91,7 +91,7 @@ void setShaders(Shader shadow);
 void display_initial_text(TextRenderer *texto);
 void startGame(Camera *cam, TextRenderer *texto,bool inicio);
 
-void show_info_help(TextRenderer *texto, double resultado, int fps, bool show);
+void show_info_help(TextRenderer *texto, double resultado, int fps,bool fim_De_jogo, time_t tempo_final, bool show);
 void play_audio(const char* audio_name,bool loop=false);
 std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos, int *amount);
 
@@ -139,7 +139,7 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	//configura o estado para remover a habilidade de voar A.K.A. y != 0
-	if (noclip == false && mapa == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 20; }
+	if (noclip == false && mapa == false) { camera.Position.y = 0; camera.MovementSpeed = 5.0f; FOV = 15; }
 	else if (!noclip && mapa) {
 		camera.MovementSpeed = 0;
 	}
@@ -333,60 +333,63 @@ void scream() {
 		play_audio("music/scream.wav", false);
 	}
 }
-void show_info_help(TextRenderer *texto,double resultado,int fps,bool show = false) {
+void settings_helper(TextRenderer * texto) {
+	ostringstream *textBuffer = new ostringstream;
+
+	muted == false ? *textBuffer << "Volume: " << audioSets[(int)(volume * 10)] << "%" : *textBuffer << "Volume: Muted";
+	texto->WriteText(textBuffer, 25, 25, 0.5f);
+	textBuffer->str("");
+
+	noclip == false ? *textBuffer << "Noclip: Disabled" : *textBuffer << "Noclip: Enabled";
+	texto->WriteText(textBuffer, 25, 50, 0.5f);
+	textBuffer->str("");
+
+	mapa == false ? *textBuffer << "Mapa: Disabled" : *textBuffer << "Mapa: Enabled";
+	texto->WriteText(textBuffer, 25, 75, 0.5f);
+	textBuffer->str("");
+
+	*textBuffer << "M -> Mapa";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 25, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "N -> Noclip";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 50, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "U -> Mute/UnMute";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 75, 0.5f);
+	textBuffer->str("");
+	*textBuffer << ", -> Reduzir o Volume";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 100, 0.5f);
+	textBuffer->str("");
+	*textBuffer << ". -> Aumentar o Volume";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 125, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "Esc -> Sair";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 150, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "WASD -> Movimento";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 175, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "F11 -> FullScreen";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 200, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "H -> Mostrar/Esconder Settings";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 225, 0.5f);
+	textBuffer->str("");
+	*textBuffer << "Enter -> Start Game!";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 250, 0.5);
+	textBuffer->str("");
+	*textBuffer << "Esc -> Sair do Jogo!";
+	texto->WriteText(textBuffer, SCR_WIDTH - 150, 275, 0.5);
+	textBuffer->str("");
+
+	delete textBuffer;
+}
+void show_info_help(TextRenderer *texto,double resultado,int fps,bool fim_de_jogo, time_t tempo_final,bool show = false) {
 	if (show) {
-		ostringstream *textBuffer = new ostringstream;
-
-		muted == false ? *textBuffer << "Volume: " << audioSets[(int)(volume * 10)] << "%" : *textBuffer << "Volume: Muted";
-		texto->WriteText(textBuffer, 25, 25, 0.5f);
-		textBuffer->str("");
-
-		noclip == false ? *textBuffer << "Noclip: Disabled" : *textBuffer << "Noclip: Enabled";
-		texto->WriteText(textBuffer, 25, 50, 0.5f);
-		textBuffer->str("");
-
-		mapa == false ? *textBuffer << "Mapa: Disabled" : *textBuffer << "Mapa: Enabled";
-		texto->WriteText(textBuffer, 25, 75, 0.5f);
-		textBuffer->str("");
-
-		*textBuffer << "M -> Mapa";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 25, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "N -> Noclip";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 50, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "U -> Mute/UnMute";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 75, 0.5f);
-		textBuffer->str("");
-		*textBuffer << ", -> Reduzir o Volume";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 100, 0.5f);
-		textBuffer->str("");
-		*textBuffer << ". -> Aumentar o Volume";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 125, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "Esc -> Sair";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 150, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "WASD -> Movimento";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 175, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "F11 -> FullScreen";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 200, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "H -> Mostrar/Esconder Settings";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 225, 0.5f);
-		textBuffer->str("");
-		*textBuffer << "Enter -> Start Game!";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 250, 0.5);
-		textBuffer->str("");
-		*textBuffer << "Esc -> Sair do Jogo!";
-		texto->WriteText(textBuffer, SCR_WIDTH - 150, 275, 0.5);
-		textBuffer->str("");
-
-		delete textBuffer;
+		settings_helper(texto);
 	}
 	else {
-		guiaText(texto, resultado, fps);
+		guiaText(texto, resultado, fps,fim_de_jogo,tempo_final);
 	}
 }
 //Permite com que teclas sejam cuidadas apenas uma vez
@@ -395,7 +398,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_N && action == GLFW_PRESS) {
 		camera.MovementSpeed = 15.0f;
 		noclip = !noclip;
-		FOV = 50;
+		noclip == true ? FOV = 50 : FOV = 15;
+		
 	}
 	//mapa
 	if (key == GLFW_KEY_M && action == GLFW_PRESS) {
@@ -432,9 +436,123 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 	//Outros necessarios
 }
+
+void play_audio(const char* audio_name, bool loop) {
+			SoundEngine->play2D(audio_name,loop);
+}
+//Esconde o mundo por alguns instantes
+void hideWorld(Shader shadow, bool apagar) {
+	if (apagar && noclip == false) {
+		shadow.use();
+		shadow.setFloat("visibility", 0.0);
+		//start_scream();
+	}
+	else {
+		shadow.use();
+		shadow.setFloat("visibility", 1.0);
+	}
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+
+// Sistema AABB, para colisão entre dois objetos, considerando que o corpo que se mova não veja o interior
+bool pointInside(float point_x, float point_z, float box_x, float box_z) {
+	if (point_x >= box_x - 0.2f && point_x <= box_x + UNIT_SIZE + 0.2f)
+		if (point_z >= box_z - 0.2f && point_z <= box_z + UNIT_SIZE + 0.2f)
+			return true;
+	return false;
+}
+//Musica de fundo do jogo
+void playMusicGame() {
+	//SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3", true);
+	SoundEngine->play2D("./music/ambient.mp3", true);
+}
+// Não foi escolhida a musica ai no fim do jogo
+void playEndMusic() {
+	SoundEngine->stopAllSounds();
+	SoundEngine->play2D("./music/victory.mp3", false);
+}
+
+
+time_t endGame(TextRenderer *texto,bool *fim_de_jogo, time_t tempo_final) {
+	if (((int)camera.Position.x < 0 || (int)camera.Position.z < 0))
+	{
+		if (inicio_jogo) return tempo_final;
+		srand(time(NULL));
+		
+		float colors_red = (rand() % 100) / 100.0f;
+		float colors_green = (rand() % 100) / 100.0f;
+		float colors_blue = (rand() % 100) / 100.0f;
+
+		//Mostra no meio do ecrã uma mensagem de cores diferentes
+		texto->RenderText("THE END!", SCR_WIDTH >> 1, SCR_HEIGHT >> 1, 1, glm::vec3(colors_red, colors_green, colors_blue));
+		if (noclip == false)
+			camera.MovementSpeed = 0.0f;
+		else {
+			camera.MovementSpeed = 50.0f;
+		}
+		end_game = true;
+		noclip = true;
+		
+		if (*fim_de_jogo == false) {
+			playEndMusic();
+			tempo_final = time(NULL) - start;
+			*fim_de_jogo = true;
+		}
+		
+	}
+	return tempo_final ;
+}
+void guiaText(TextRenderer *texto, float resultado, float fps,bool fim_de_jogo, time_t tempo_final) {
+	if (textEnabled) {
+		ostringstream *stringEscrita = new ostringstream;
+		*stringEscrita << "Latency: " << resultado << " ms";
+		texto->RenderText(stringEscrita->str(), 25.0f, 25.0f, 0.5);
+		stringEscrita->str("");
+		*stringEscrita << "Exit x: " << saida.first.first << " z: " << saida.first.second;
+		texto->RenderText(stringEscrita->str(), SCR_WIDTH - 150.0f, 50.0f, 0.5);
+		stringEscrita->str("");
+		*stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
+		texto->RenderText(stringEscrita->str(), SCR_WIDTH - 150.0f, 25.0f, 0.5);
+		stringEscrita->str("");
+		//cout << fim_de_jogo << endl;
+		inicio_jogo == true ? *stringEscrita << "Tempo: 0" : fim_de_jogo == false ? *stringEscrita << "Tempo: " << (time(NULL) - start) : *stringEscrita << "Tempo: " << tempo_final;
+		texto->RenderText(stringEscrita->str(), SCR_WIDTH - 150.0f, 75.0f, 0.5);
+		stringEscrita->str("");
+		*stringEscrita << "FPS: " << fps;
+		texto->RenderText(stringEscrita->str(), 25.0f, 50.0f, 0.5);
+		stringEscrita->str("");
+		*stringEscrita << "H -> Mostrar/Esconder Settings";
+		texto->RenderText(stringEscrita->str(), 25.0f, 75.0f, 0.5);
+		stringEscrita->str("");
+		delete stringEscrita;
+	}
+}
+float distancia(float x1, float z1, float x2, float z2) {
+	return sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f));
+}
+
+
+std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos,int *amount) {
+	for (int i = 0; i < sized; i++)
+		for (int j = 0; j < sized; j++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			// only calculates what is needed skips positioning useless blocks
+			if (!matrix[i][j])
+				continue;
+			//model = glm::translate(model, glm::vec3(i, 100,j));
+			else {
+				cubePos.push_back(std::make_pair(BOTTOM_LEFT.first + i * UNIT_SIZE, BOTTOM_LEFT.second + j * UNIT_SIZE));
+				(*amount)++;
+			}
+		}
+	return cubePos;
+}
+
 //corre o jogo
 int gameLoop()
-{	
+{
 
 	// glfw: initialize and configure
 	// ------------------------------
@@ -533,7 +651,7 @@ int gameLoop()
 
 	double resultado = 0;
 	ostringstream stringEscrita;
-	start = time(NULL);
+
 	int fps = 0;
 
 	cube.use();
@@ -541,15 +659,15 @@ int gameLoop()
 	cube.setInt("material.specular", 1);
 	texto->Load("fonts/ARIALNB.TTF", 24);
 
-	SoundEngine->setSoundVolume(0.5f);
+	SoundEngine->setSoundVolume(volume);
 	TextRenderer texto2 = *texto;
 	texto2.Load("fonts/ARIALNB.TTF", 50);
-	
+
 	std::thread music(playMusicGame);
 	std::thread scream_audio(scream);
 	scream_audio.detach();
 	bool fim_de_jogo = false;
-
+	time_t tempo_final = 0;
 	glfwSetKeyCallback(window, key_callback);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -566,7 +684,10 @@ int gameLoop()
 		glClearColor(.0f, .0f, .0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
+		startGame(&camera, &texto2, inicio_jogo);
+		if (inicio_jogo == false && start == 0) {
+			start = time(NULL);
+		}
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -595,10 +716,10 @@ int gameLoop()
 			//play_audio("music/scream.wav");
 		}
 
-		startGame(&camera, &texto2, inicio_jogo);
+
 		//Ativa o fim do jogo
-		endGame(&texto2,fim_de_jogo);
-		
+		tempo_final = endGame(&texto2, &fim_de_jogo, tempo_final);
+
 		//informação auxiliar FPS e latency
 		double currentTime = glfwGetTime();
 		nbFrames++;
@@ -609,7 +730,7 @@ int gameLoop()
 			lastTime += 1.0;
 		}
 		//Mostra informação auxiliar
-		show_info_help(texto, resultado, fps, settings);
+		show_info_help(texto, resultado, fps, fim_de_jogo, tempo_final, settings);
 
 		if (saida.second.second) cubePos[saida.second.first] = std::make_pair(999.0f, 999.0f);
 		//Habilita a deteção e o comportamento da colisão entre objetos 
@@ -646,112 +767,5 @@ int gameLoop()
 
 	glfwTerminate();
 
-
-}
-void play_audio(const char* audio_name, bool loop) {
-			SoundEngine->play2D(audio_name,loop);
-}
-//Esconde o mundo por alguns instantes
-void hideWorld(Shader shadow, bool apagar) {
-	if (apagar && noclip == false) {
-		shadow.use();
-		shadow.setFloat("visibility", 0.0);
-		//start_scream();
-	}
-	else {
-		shadow.use();
-		shadow.setFloat("visibility", 1.0);
-	}
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-
-// Sistema AABB, para colisão entre dois objetos, considerando que o corpo que se mova não veja o interior
-bool pointInside(float point_x, float point_z, float box_x, float box_z) {
-	if (point_x >= box_x - 0.2f && point_x <= box_x + UNIT_SIZE + 0.2f)
-		if (point_z >= box_z - 0.2f && point_z <= box_z + UNIT_SIZE + 0.2f)
-			return true;
-	return false;
-}
-//Musica de fundo do jogo
-void playMusicGame() {
-	//SoundEngine->play2D("./music/Loyalty_Freak_Music_-_07_-_A_really_dark_alley.mp3", true);
-	SoundEngine->play2D("./music/ambient.mp3", true);
-}
-// Não foi escolhida a musica ai no fim do jogo
-void playEndMusic() {
-	SoundEngine->stopAllSounds();
-	//SoundEngine->play2D(,true)
-
-}
-
-
-void endGame(TextRenderer *texto,bool fim_de_jogo) {
-	if (((int)camera.Position.x < 0 || (int)camera.Position.z < 0))
-	{
-		if (inicio_jogo) return;
-		srand(time(NULL));
-		
-		float colors_red = (rand() % 100) / 100.0f;
-		float colors_green = (rand() % 100) / 100.0f;
-		float colors_blue = (rand() % 100) / 100.0f;
-
-		//Mostra no meio do ecrã uma mensagem de cores diferentes
-		texto->RenderText("THE END!", SCR_WIDTH >> 1, SCR_HEIGHT >> 1, 1, glm::vec3(colors_red, colors_green, colors_blue));
-		if (noclip == false)
-			camera.MovementSpeed = 0.0f;
-		else {
-			camera.MovementSpeed = 50.0f;
-		}
-		end_game = true;
-		noclip = true;
-		
-		if (fim_de_jogo == false) {
-			playEndMusic();
-			fim_de_jogo == true;
-		}
-		
-	}
-}
-void guiaText(TextRenderer *texto, float resultado, float fps) {
-	if (textEnabled) {
-		ostringstream *stringEscrita = new ostringstream;
-		*stringEscrita << "Latency: " << resultado << " ms";
-		texto->RenderText(stringEscrita->str(), 25.0f, 25.0f, 0.5);
-		stringEscrita->str("");
-		*stringEscrita << "Exit x: " << saida.first.first << " z: " << saida.first.second;
-		texto->RenderText(stringEscrita->str(), SCR_WIDTH - 150.0f, 50.0f, 0.5);
-		stringEscrita->str("");
-		*stringEscrita << " x: " << (int)camera.Position.x << " z: " << (int)camera.Position.z;
-		texto->RenderText(stringEscrita->str(), SCR_WIDTH - 150.0f, 25.0f, 0.5);
-		stringEscrita->str("");
-		*stringEscrita << "FPS: " << fps;
-		texto->RenderText(stringEscrita->str(), 25.0f, 50.0f, 0.5);
-		stringEscrita->str("");
-		*stringEscrita << "H -> Mostrar/Esconder Settings";
-		texto->RenderText(stringEscrita->str(), 25.0f, 75.0f, 0.5);
-		stringEscrita->str("");
-		delete stringEscrita;
-	}
-}
-float distancia(float x1, float z1, float x2, float z2) {
-	return sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f));
-}
-
-
-std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos,int *amount) {
-	for (unsigned int i = 0; i < sized; i++)
-		for (unsigned int j = 0; j < sized; j++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			// only calculates what is needed skips positioning useless blocks
-			if (!matrix[i][j])
-				continue;
-			//model = glm::translate(model, glm::vec3(i, 100,j));
-			else {
-				cubePos.push_back(std::make_pair(BOTTOM_LEFT.first + i * UNIT_SIZE, BOTTOM_LEFT.second + j * UNIT_SIZE));
-				*amount++;
-			}
-		}
-	return cubePos;
+	return 0;
 }

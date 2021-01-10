@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto</FILEPATH>
+      <FILENAME>text_renderer.h</FILENAME>
+      <LINE>12</LINE>
+      <COLUMN>1</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'Character::TextureID' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>Character::{ctor}</FUNCTION>
+    <DECORATED>??0Character@@QEAA@XZ</DECORATED>
+    <FUNCLINE>12</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto</FILEPATH>
+      <FILENAME>text_renderer.h</FILENAME>
+      <LINE>12</LINE>
+      <COLUMN>1</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'Character::Advance' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>Character::{ctor}</FUNCTION>
+    <DECORATED>??0Character@@QEAA@XZ</DECORATED>
+    <FUNCLINE>12</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

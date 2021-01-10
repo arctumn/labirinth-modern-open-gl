@@ -17,15 +17,12 @@ c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(300): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(309): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
 c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(310): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(389): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(389): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(560): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(693): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(711): warning C4553: '==': result of expression not used; did you intend '='?
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(743): warning C4018: '<': signed/unsigned mismatch
-c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(744): warning C4018: '<': signed/unsigned mismatch
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(392): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(392): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(481): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\silve\source\repos\labirinth-modern-open-gl\labirinto\labirinto_code.h(678): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Generating code
-  1 of 1397 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  0 of 1398 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

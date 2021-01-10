@@ -4,8 +4,7 @@
 
 int main()
 {
-	int ret_val = gameLoop();
-	return ret_val;
+	return gameLoop();
 }
 
 
