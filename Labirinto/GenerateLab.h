@@ -1,4 +1,4 @@
-#ifndef __GENERATE_LAB_H__
+ï»¿#ifndef __GENERATE_LAB_H__
 #define __GENERATE_LAB_H__
 #endif
 #include <iostream>
@@ -6,11 +6,14 @@
 #include <time.h>
 #include <chrono>
 #include <thread>
-
-#define pd 5 // Probabilidade de manter a direção
+#define pd 5 // Probabilidade de manter a direï¿½ï¿½o
 #define pb 4 // probabilidade de criar um branch
-#define GREEN     "\033[32m"      /* Red */
+#define GREEN     "\033[32m"      /* Green */
 #define GREENEND  "\033[0m"
+#define RED     "\033[31m"      /* Red */
+#define REDEND  "\033[0m"
+
+int numero_notas = 8;
 
 
 //       1              <- CIMA
@@ -32,8 +35,8 @@ void VerGrelha(int **a,int sized) {
 				std::cout << GREEN << "C|" << GREENEND;
 			else if (a[i][j] == 1)
 				std::cout << "O|";
-			else
-				std::cout << "P|";
+			else if (a[i][j] == 2)
+				std::cout << RED << "N" << GREEN << "|" << GREENEND;
 		}
 		std::cout << "\n";
 	}
@@ -73,7 +76,7 @@ int EscolheDirecao(int d, bool limitado) {
 	return d;
 }
 
-bool calculaDistancia(int pos1, int pos2, Camera camera, int sized) {
+bool calculaDistancia(int pos1, int pos2, Camera camera,int sized) {
 	if (sqrtf(powf(pos1 - camera.Position.x, 2.0) + powf(pos2 - camera.Position.z, 2.0) < (float)sized / 4)) {
 		//std::cout << "\nReturnei falso\n";
 		return false; // Se demasiado perto
@@ -87,13 +90,14 @@ pair<int, int> filterSaida(pair<int, int> * resultado, int cont, Camera camera, 
 	int elements = 0;
 	std::list<pair <int, int>> resultados;
 	for (int i = 0; i < cont; i++) {
-		if (calculaDistancia(resultado[i].first, resultado[i].second, camera,sized)) {
+		if (calculaDistancia(resultado[i].first, resultado[i].second, camera, sized)) {
 			resultados.push_front(resultado[i]);
 			elements++;
 		}
 	}
-	if (!elements)
+	if (!elements && cont != 0)
 		return resultado[rand() % cont];
+	else return *resultado;
 	auto it = resultados.begin();
 	std::advance(it, rand() % elements);
 	pair <int, int> final = *it;
@@ -105,7 +109,7 @@ pair<int, int> EscolheSaida(int **m, Camera cam, int sized) {
 
 	//std::cout << "\nValores da camera: " << cam.Position.x << ", " << cam.Position.z << "\n";
 
-	pair<int, int> *resultado = new pair<int,int> [sized * 4 - 4];
+	pair<int, int> *resultado = new pair<int, int>[sized * 4 - 4];
 	int cont = 0;
 	for (int i = 0; i < sized - 1; i++) {
 		for (int j = 0; j < sized - 1; j++) {
@@ -117,13 +121,13 @@ pair<int, int> EscolheSaida(int **m, Camera cam, int sized) {
 					cont++;
 				}
 			}
-			else if (i == (sized - 1) ) {
+			else if (i == (sized - 1)) {
 				if (m[i - 1][j] == 0) {
 					resultado[cont] = make_pair(i, j);
 					cont++;
 				}
 			}
-			else if (j == 0 ) {
+			else if (j == 0) {
 				if (m[i][j + 1] == 0) {
 					resultado[cont] = make_pair(i, j);
 					cont++;
@@ -137,9 +141,11 @@ pair<int, int> EscolheSaida(int **m, Camera cam, int sized) {
 			}
 		}
 	}
-	
-	return filterSaida(resultado,cont,cam,sized);
+
+	return filterSaida(resultado, cont, cam,sized);
 }
+
+
 
 bool VerificaDirecao(int **a, int d, int i, int j, int sized) {
 	if (d == 0) {
@@ -201,37 +207,37 @@ void CriaCaminho(int **a, int i, int j, int d, int contd, int contb, bool branch
 			}
 		}
 		if (contb < 1) {
-			if (!VerificaDirecao(a, AddDirecao(d), i, j,sized) && !VerificaDirecao(a, SubDirecao(d), i, j,sized)) {
+			if (!VerificaDirecao(a, AddDirecao(d), i, j, sized) && !VerificaDirecao(a, SubDirecao(d), i, j, sized)) {
 				if ((rand() % 10) > 8) {
-					CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true,sized);
-					CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true,sized);
+					CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true, sized);
+					CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true, sized);
 				}
 				else {
 					if ((rand() % 10) > 5)
-						CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true,sized);
+						CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true, sized);
 					else
-						CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true,sized);
+						CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true, sized);
 				}
 				contb = rand() % 4 + 2;
 			}
-			else if (!VerificaDirecao(a, AddDirecao(d), i, j,sized)) {
-				CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true,sized);
+			else if (!VerificaDirecao(a, AddDirecao(d), i, j, sized)) {
+				CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true, sized);
 				contb = rand() % 4 + 2;
 			}
-			else if (!VerificaDirecao(a, SubDirecao(d), i, j,sized)) {
-				CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true,sized);
+			else if (!VerificaDirecao(a, SubDirecao(d), i, j, sized)) {
+				CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true, sized);
 				contb = rand() % 4 + 2;
 			}
 			//else
-				//std::cout << "Não consigo criar branch.";
+				//std::cout << "Nï¿½o consigo criar branch.";
 		}
 
 		// Escolher Branch
 
-		// Verifica avanço
+		// Verifica avanï¿½o
 		int cont1 = 0;
 		if (branch == false) { // para o caminho principal
-			while (VerificaDirecao(a, d, i, j,sized)) {
+			while (VerificaDirecao(a, d, i, j, sized)) {
 				if (cont1 == 1) {
 					d = AddDirecao(d);
 					d = AddDirecao(d);
@@ -244,7 +250,7 @@ void CriaCaminho(int **a, int i, int j, int d, int contd, int contb, bool branch
 			}
 		} // para branches 
 		else if (branch == true) {
-			while (VerificaDirecao(a, d, i, j,sized)) {
+			while (VerificaDirecao(a, d, i, j, sized)) {
 				if (cont1 == 1) {
 					d = AddDirecao(d);
 					d = AddDirecao(d);
@@ -257,33 +263,33 @@ void CriaCaminho(int **a, int i, int j, int d, int contd, int contb, bool branch
 			}
 			if (VerificaConexao(a, d, i, j)) {
 				if ((rand() % 10) > 5) {
-					if (!VerificaDirecao(a, AddDirecao(d), i, j,sized) && !VerificaDirecao(a, SubDirecao(d), i, j,sized)) {
+					if (!VerificaDirecao(a, AddDirecao(d), i, j, sized) && !VerificaDirecao(a, SubDirecao(d), i, j, sized)) {
 						if ((rand() % 10) > 8) {
-							CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true,sized);
-							CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true,sized);
+							CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true, sized);
+							CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true, sized);
 						}
 						else {
 							if ((rand() % 10) > 5)
-								CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true,sized);
+								CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true, sized);
 							else
-								CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true,sized);
+								CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true, sized);
 						}
 					}
-					else if (!VerificaDirecao(a, AddDirecao(d), i, j,sized)) {
-						CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true,sized);
+					else if (!VerificaDirecao(a, AddDirecao(d), i, j, sized)) {
+						CriaCaminho(a, i, j, AddDirecao(d), 3, 3, true, sized);
 					}
-					else if (!VerificaDirecao(a, SubDirecao(d), i, j,sized)) {
-						CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true,sized);
+					else if (!VerificaDirecao(a, SubDirecao(d), i, j, sized)) {
+						CriaCaminho(a, i, j, SubDirecao(d), 3, 3, true, sized);
 					}
 					return;
 				}
 				if ((rand() % 100) > 5)
-					return; // <- Retirar para não ter becos
+					return; // <- Retirar para nï¿½o ter becos
 			}
 		}
 
-		// Avançar
-		//std::cout << "D é igual a: %i" << d;
+		// Avanï¿½ar
+		//std::cout << "D ï¿½ igual a: %i" << d;
 		if (d == 0) {
 			if (VerificaConexao(a, d, i, j)) {
 				a[i][j - 1] = 0;
@@ -322,30 +328,75 @@ void CriaCaminho(int **a, int i, int j, int d, int contd, int contb, bool branch
 	}
 }
 
+float CalcDistancia(int pos1, int pos11, int pos2, int pos22) {
+	return sqrtf(powf(pos1 - pos11, 2.0) + powf(pos2 - pos22, 2.0));
+}
+
+void AddNotas(int** a, int sized) {
+	pair<int, int>* candidatos = new pair<int, int>[sized*sized];
+	pair<int, int>* notasAdd = new pair<int, int>[numero_notas];
+	if (sized < 30)
+		numero_notas = 2;
+	int distancia_notas = (sized / numero_notas)*0.40;
+	int cont = 0;
+	int notas = 0;
+	for (int i = 0; i < sized - 1; i++) {
+		for (int j = 0; j < sized - 1; j++) {
+			if (a[i][j] == 0) {
+				candidatos[cont] = make_pair(i, j);
+				cont++;
+			}
+		}
+	}
+	int indice = 0;
+	while (notas < numero_notas) {
+		indice = rand() % cont;
+		a[candidatos[indice].first][candidatos[indice].second] = 2;
+		notasAdd[notas] = make_pair(candidatos[indice].first, candidatos[indice].second);
+		notas++;
+		indice = 0;
+		pair<int, int>* NovosCandidatos = new pair<int, int>[cont];
+		for (int i = 0; i < cont - 1; i++) {
+			for (int j = 0; j < notas - 1; j++) {
+				if (CalcDistancia(candidatos[i].first, notasAdd[j].first, candidatos[i].second, notasAdd[j].second) < distancia_notas)
+					break;
+			}
+			NovosCandidatos[indice] = candidatos[i];
+			indice++;
+		}
+		candidatos = NovosCandidatos;
+		cont = indice;
+	}
+	delete candidatos;
+	delete notasAdd;
+}
+
 void CriaLab(int **a,int sized) {
-	
+
 	int i, j = 0;
 	srand(time(NULL));
 	PreencheGrelha(a,sized);
 	i = rand() % (sized - 3) + 2;
 	//std::cout << "%i" << i;
 	j = rand() % (sized - 3) + 2;
-	//std::cout << "%i" << j; // Posição para o início do primeiro caminho
+	//std::cout << "%i" << j; // Posiï¿½ï¿½o para o inï¿½cio do primeiro caminho
 	// a[i][j] = 2; // para ver um starting point
 	a[i][j] = 0; // para ir a caminho
 
-	CriaCaminho(a, i, j, 0, 3, 3, false,sized);
+	CriaCaminho(a, i, j, 0, 3, 3, false, sized);
+	AddNotas(a,sized);
+	//VerGrelha(a);
 }
 
-int CriaEMostra(int sized) { // Esta função vai criar 1 labirinto
+int CriaEMostra(int sized) { // Esta funï¿½ï¿½o vai criar 1 labirinto
 	int **grelha;
 
 	grelha = (int**)calloc(sized * sized, sizeof(int*));
-		
+
 	CriaLab(grelha,sized);
 
 	// grelha[i][j] = 2;
-	VerGrelha(grelha,sized); // -> Imprime a grelha no ecrã
+	VerGrelha(grelha,sized); // -> Imprime a grelha no ecrï¿½
 	free(grelha);
 	return 0;
 }

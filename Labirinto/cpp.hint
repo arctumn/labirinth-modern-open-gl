@@ -1,0 +1,6 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define uint32 unsigned int
+
+#define matIterator for (unsigned int i = 0; i < len; i++) for (unsigned int j = 0; j < len; j++)

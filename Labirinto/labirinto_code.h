@@ -25,7 +25,7 @@
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-static int sized = 100;
+
 bool fullscreen = false;
 bool noclip = false;
 bool mapa = false;
@@ -76,8 +76,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-glm::mat4 * load(Model obj, int *amount, float scale, glm::mat4 * matrices);
-void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount);
+glm::mat4 * load(Model obj, int *amount, float scale, glm::mat4 * matrices, int sized);
+void produceExit(GLFWwindow *window, glm::mat4 *matrices, Model obj, int getAmount, int sized);
 void hideWorld(Shader shadow,bool apagar);
 
 bool pointInside(float point_x, float point_z, float box_x, float box_z);
@@ -93,7 +93,7 @@ void startGame(Camera *cam, TextRenderer *texto,bool inicio);
 
 void show_info_help(TextRenderer *texto, double resultado, int fps,bool fim_De_jogo, time_t tempo_final, bool show);
 void play_audio(const char* audio_name,bool loop=false);
-std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos, int *amount);
+std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos, int *amount, int sized);
 
 using namespace irrklang;
 
@@ -214,7 +214,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll((float)yoffset);
 }
 
-glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices)
+glm::mat4 *load(Model obj, int * getAmount, float scale, glm::mat4 *matrices,int sized)
 {
 	unsigned int len = sized;
 
@@ -312,7 +312,7 @@ void setShaders(Shader shadow) {
 	glUniform1f(glGetUniformLocation(shadow.ID, "spotLight.outerCutOff"), glm::cos(glm::radians(25.0f)));
 }
 //O utilizador chegou ao fim
-void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmount) {
+void produceExit(GLFWwindow* window, glm::mat4* matrices, Model obj, int getAmount,int sized) {
 	if (saida.second.second)
 		return;
 
@@ -531,9 +531,34 @@ void guiaText(TextRenderer *texto, float resultado, float fps,bool fim_de_jogo, 
 float distancia(float x1, float z1, float x2, float z2) {
 	return sqrtf(powf(x2 - x1, 2.0f) + powf(z2 - z1, 2.0f));
 }
+#define uint unsigned int
 
+#define matIterator(sized) for (int i = 0; i < sized; i++) for (int j = 0; j < sized; j++)
 
-std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos,int *amount) {
+glm::mat4 * load_pages(int *pageAmount, float scale, glm::mat4 *matrices, int sized) {
+	uint len = sized;
+	uint number_pages = 0;
+
+	matIterator(sized)
+		if (matrix[i][j] == 2) number_pages++;
+
+	*pageAmount = number_pages;
+	std::cout << *pageAmount << endl;
+	matrices = new glm::mat4[*pageAmount];
+	number_pages = 0;
+
+	matIterator(sized)
+		if (matrix[i][j] == 2)
+		{
+			matrices[number_pages] = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-.7+i, -.1f, -.7+j)), glm::vec3(scale));
+			number_pages++;
+			std::cout << i << " " << j << endl;
+		}
+
+	return matrices;
+}
+
+std::vector<pair<float, float>> posicoesColision(std::vector<pair<float, float>> cubePos,int *amount,int sized) {
 	for (int i = 0; i < sized; i++)
 		for (int j = 0; j < sized; j++)
 		{
@@ -596,7 +621,7 @@ int gameLoop()
 
 
 	//-----------BEGIN------------//
-
+	int sized = 100;
 	matrix = new int*[sized];
 	for (int i = 0; i < sized; i++) matrix[i] = new int[sized];
 	CriaLab(matrix, sized);
@@ -618,17 +643,23 @@ int gameLoop()
 	//Shader lampShader("shaders/2.1.lamp.vs", "shaders/2.1.lamp.fs");
 	Shader cube("shaders/cube.vs", "shaders/cube.fs");
 	Model wall("objects/rock/wall.obj");
+
+	Shader pageShader("shaders/page.vs", "shaders/page.fs");
+	Model  pageModel("objects/pages/page.obj");
 	TextRenderer *texto = new TextRenderer(SCR_WIDTH, SCR_HEIGHT);
 
 	int amount = 0;
-
+	int page_amount = 0;
 	glm::mat4 *modelMatrices = NULL;
-	modelMatrices = load(wall, &amount, 0.5f, modelMatrices);
+	glm::mat4 *pageMatrices = NULL;
+	modelMatrices = load(wall, &amount, 0.5f, modelMatrices,sized);
+	pageMatrices = load_pages(&page_amount, 0.5f, pageMatrices, sized);
+
 	std::ostringstream in;
 
 	const int value = amount;
 	int h = 0;
-	std::vector<pair<float, float>> cubePos = posicoesColision(cubePos, &h);// = (pair<float, float> *)calloc(amount,sizeof(pair<float,float>));
+	std::vector<pair<float, float>> cubePos = posicoesColision(cubePos, &h, sized);// = (pair<float, float> *)calloc(amount,sizeof(pair<float,float>));
 
 
 
@@ -707,7 +738,7 @@ int gameLoop()
 				time_t end = time(NULL);
 				cube.use();
 
-				produceExit(window, modelMatrices, wall, amount);
+				produceExit(window, modelMatrices, wall, amount,sized);
 				if (distancia(cubePos[i].first, cubePos[i].second, camera.Position.x, camera.Position.z) < FOV)
 					wall.Draw(cube);
 				//Esconde o mundo do jogador
@@ -715,7 +746,16 @@ int gameLoop()
 			}
 			//play_audio("music/scream.wav");
 		}
-
+		{
+			pageShader.use();
+			pageShader.setMat4("projection", projection);
+			pageShader.setMat4("view", view);
+			for (int i = 0; i < page_amount; i++) {
+				pageShader.use();
+				pageShader.setMat4("model", pageMatrices[i]);
+				pageModel.Draw(pageShader);
+			}
+		}
 
 		//Ativa o fim do jogo
 		tempo_final = endGame(&texto2, &fim_de_jogo, tempo_final);
